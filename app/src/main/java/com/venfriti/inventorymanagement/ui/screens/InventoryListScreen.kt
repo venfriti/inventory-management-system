@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,9 +20,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -32,28 +34,34 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.venfriti.inventorymanagement.R
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 
 
 @Composable
 fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingValues) {
     Column(
-        modifier = Modifier.padding(contentPadding)
+        modifier = Modifier
+            .padding(contentPadding)
+            .padding(horizontal = 48.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
                 .fillMaxWidth()
         ) {
             var holder by rememberSaveable { mutableStateOf("") }
             Box(
-                modifier = Modifier.weight(2f).background(Color.Red),
+                modifier = Modifier
+                    .weight(2f)
+                    .background(Color.Red),
                 contentAlignment = Alignment.Center
             ){
             }
@@ -82,16 +90,22 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
                 LoginDetails(name = "tolulope", icon = Icons.Filled.AccountCircle)
             }
         }
+        Product(
+            "Bolts",
+            50
+        )
     }
 }
 
 @Composable
 fun LoginDetails(name: String, icon: ImageVector) {
     Row(
-        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.End
     ){
-        Text(text = name, fontSize = 24.sp, modifier = Modifier.padding(vertical = 12.dp))
+        Text(text = name, fontSize = 18.sp, modifier = Modifier.padding(vertical = 12.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
             imageVector = icon,
@@ -154,5 +168,71 @@ fun SearchBar(
             }
         },
         shape = ShapeDefaults.ExtraLarge
+    )
+}
+
+@Composable
+fun Product(
+    name: String,
+    amount: Int
+){
+    Box(
+        modifier = Modifier
+            .padding(vertical = 16.dp)
+            .clip(ShapeDefaults.Medium)
+            .background(backgroundBlue)
+            .fillMaxWidth(0.5f)
+            .fillMaxHeight(0.3f),
+        contentAlignment = Alignment.Center
+    ){
+        Row(
+        ){
+            Box(
+                modifier = Modifier.fillMaxHeight().weight(3f),
+                contentAlignment = Alignment.Center
+            ){
+                Column(
+                ) {
+                    Text(
+                        text = stringResource(R.string.name, name),
+                        fontSize = 32.sp
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.amount, amount),
+                        fontSize = 32.sp
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(3f),
+                contentAlignment = Alignment.Center
+            ){
+                Button(
+                    onClick = {},
+                    enabled = true,
+                    shape = ShapeDefaults.Large
+                ){
+                    Text(
+                        text = "Add/Remove",
+                        fontSize = 20.sp
+                    )
+                }
+            }
+
+        }
+
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ProductPreview(){
+    Product(
+        "Bolts",
+        50
     )
 }
