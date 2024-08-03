@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -28,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +47,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.venfriti.inventorymanagement.R
+import com.venfriti.inventorymanagement.data.Inventory
+import com.venfriti.inventorymanagement.ui.theme.InventoryManagementTheme
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 
 
@@ -51,8 +57,11 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
     Column(
         modifier = Modifier
             .padding(contentPadding)
-            .padding(horizontal = 48.dp)
+            .padding(horizontal = 36.dp)
     ) {
+
+        val inventoryList by viewModel.inventoryList.collectAsState(initial = emptyList())
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -90,10 +99,10 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
                 LoginDetails(name = "tolulope", icon = Icons.Filled.AccountCircle)
             }
         }
-        Product(
-            "Bolts",
-            50
+        InventoryGridList(
+            inventoryList
         )
+
     }
 }
 
@@ -172,27 +181,56 @@ fun SearchBar(
 }
 
 @Composable
+fun InventoryGridList(
+    products: List<Inventory>,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
+) {
+    LazyVerticalGrid(
+        modifier = Modifier.padding(vertical = 16.dp),
+        columns = GridCells.Fixed(2),
+        contentPadding = contentPadding
+    ) {
+        items(items = products, key = { it.id}) { product ->
+            Product(
+                product.name,
+                product.amount,
+                modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 16.dp,)
+            )
+        }
+    }
+}
+
+@Composable
 fun Product(
     name: String,
-    amount: Int
+    amount: Int,
+    modifier: Modifier = Modifier
 ){
     Box(
-        modifier = Modifier
-            .padding(vertical = 16.dp)
+        modifier = modifier
             .clip(ShapeDefaults.Medium)
             .background(backgroundBlue)
             .fillMaxWidth(0.5f)
-            .fillMaxHeight(0.3f),
+            .fillMaxHeight(0.3f)
+        ,
         contentAlignment = Alignment.Center
     ){
         Row(
-        ){
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    vertical = 16.dp,
+                    horizontal = 8.dp
+                )
+        ) {
             Box(
-                modifier = Modifier.fillMaxHeight().weight(3f),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(3f),
                 contentAlignment = Alignment.Center
             ){
-                Column(
-                ) {
+                Column {
                     Text(
                         text = stringResource(R.string.name, name),
                         fontSize = 32.sp
@@ -208,7 +246,8 @@ fun Product(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .weight(3f),
+                    .weight(2f)
+                    .padding(top = 20.dp),
                 contentAlignment = Alignment.Center
             ){
                 Button(
@@ -231,8 +270,12 @@ fun Product(
 @Preview(showBackground = true)
 @Composable
 fun ProductPreview(){
-    Product(
-        "Bolts",
-        50
-    )
+    InventoryManagementTheme {
+        Column {
+            Product(
+                "Bolts",
+                50
+            )
+        }
+    }
 }

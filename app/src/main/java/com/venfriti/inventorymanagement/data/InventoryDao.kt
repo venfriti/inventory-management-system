@@ -2,6 +2,7 @@ package com.venfriti.inventorymanagement.data
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -10,6 +11,10 @@ interface InventoryDao{
     @Query("SELECT * FROM inventory ORDER BY id ASC")
     fun getAllInventory(): Flow<List<Inventory>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addInventory(inventory: Inventory)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addInventoryList(inventoryList: List<Inventory>)
+
 }
