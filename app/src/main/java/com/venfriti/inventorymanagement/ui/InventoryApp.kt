@@ -52,7 +52,8 @@ fun InventoryTopAppBar(scrollBehavior: TopAppBarScrollBehavior, modifier: Modifi
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = lightBlue
+            containerColor = lightBlue,
+            scrolledContainerColor = lightBlue
         ),
         modifier = modifier
     )

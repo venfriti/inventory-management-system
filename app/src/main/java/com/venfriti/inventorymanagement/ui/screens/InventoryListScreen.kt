@@ -1,6 +1,7 @@
 package com.venfriti.inventorymanagement.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ShapeDefaults
@@ -41,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,23 +54,32 @@ import com.venfriti.inventorymanagement.R
 import com.venfriti.inventorymanagement.data.Inventory
 import com.venfriti.inventorymanagement.ui.theme.InventoryManagementTheme
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
+import com.venfriti.inventorymanagement.ui.theme.componentBackground
 
 
 @Composable
 fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingValues) {
+    val focusManager = LocalFocusManager.current
     Column(
         modifier = Modifier
             .padding(contentPadding)
             .padding(horizontal = 36.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
     ) {
 
-        val inventoryList by viewModel.inventoryList.collectAsState(initial = emptyList())
+        val searchQuery by viewModel.searchQuery.collectAsState()
+        val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
+
+        var textInput by rememberSaveable { mutableStateOf("") }
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            var holder by rememberSaveable { mutableStateOf("") }
             Box(
                 modifier = Modifier
                     .weight(2f)
@@ -79,16 +92,14 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
                 contentAlignment = Alignment.Center
             ){
                 SearchBar(
-                    searchQuery = holder,
-                    onSearch = { holder = it },
+                    searchQuery = textInput,
+                    onSearch = { textInput = it },
                     onValueChange = {
-//                        show = true
-                        holder = it
-//                        viewModel.setSearchQuery(it)
+                        textInput = it
+                        viewModel.setSearchQuery(it)
                     },
                     onClear = {
-//                        show = true
-                        holder = ""
+                        textInput = ""
                     }
                 )
             }
@@ -100,7 +111,7 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
             }
         }
         InventoryGridList(
-            inventoryList
+            searchResults
         )
 
     }
@@ -135,6 +146,7 @@ fun SearchBar(
     val hint = "Search..."
     var text by rememberSaveable { mutableStateOf("") }
 
+
     TextField(
         value = searchQuery,
         onValueChange = {
@@ -144,7 +156,8 @@ fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .height(55.dp),
+            .height(55.dp)
+        ,
         placeholder = { Text(text = hint) },
         singleLine = true,
         maxLines = 1,
@@ -195,7 +208,7 @@ fun InventoryGridList(
             Product(
                 product.name,
                 product.amount,
-                modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 16.dp,)
+                modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 16.dp)
             )
         }
     }
@@ -233,12 +246,12 @@ fun Product(
                 Column {
                     Text(
                         text = stringResource(R.string.name, name),
-                        fontSize = 32.sp
+                        fontSize = 24.sp
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.amount, amount),
-                        fontSize = 32.sp
+                        fontSize = 24.sp
                     )
                 }
             }
@@ -247,17 +260,23 @@ fun Product(
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(2f)
-                    .padding(top = 20.dp),
+                    .padding(top = 16.dp),
                 contentAlignment = Alignment.Center
             ){
                 Button(
                     onClick = {},
                     enabled = true,
-                    shape = ShapeDefaults.Large
+                    shape = ShapeDefaults.Large,
+                    colors = ButtonColors(
+                        containerColor = componentBackground,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White,
+                        disabledContainerColor = Color.Gray
+                    )
                 ){
                     Text(
                         text = "Add/Remove",
-                        fontSize = 20.sp
+                        fontSize = 16.sp
                     )
                 }
             }

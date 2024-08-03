@@ -9,4 +9,6 @@ interface InventoryRepository {
     suspend fun addInventory(inventory: Inventory)
 
     suspend fun addInventoryList(inventoryList: List<Inventory>)
+
+    suspend fun getSearchList(searchName: String): Flow<List<Inventory>>
 }

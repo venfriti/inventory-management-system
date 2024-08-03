@@ -14,4 +14,8 @@ class OfflineInventoryRepository(private val inventoryDao: InventoryDao): Invent
     override suspend fun addInventoryList(
         inventoryList: List<Inventory>
     ) = inventoryDao.addInventoryList(inventoryList)
+
+    override suspend fun getSearchList(
+        searchName: String
+    ): Flow<List<Inventory>> = inventoryDao.getSearchList(searchName)
 }

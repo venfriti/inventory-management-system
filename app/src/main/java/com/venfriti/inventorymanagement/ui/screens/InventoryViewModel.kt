@@ -30,7 +30,6 @@ class InventoryViewModel(
 
     init {
         viewModelScope.launch {
-//            inventoryRepository.addInventory(Inventory(name = "Indomie", amount = 50))
             inventoryRepository.addInventoryList(products)
         }
     }
@@ -40,10 +39,10 @@ class InventoryViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-//    @OptIn(ExperimentalCoroutinesApi::class)
-//    val searchResults = _searchQuery.flatMapLatest { query ->
-//        inventoryRepository.getSearchList(query)
-//    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val searchResults = _searchQuery.flatMapLatest { query ->
+        inventoryRepository.getSearchList(query)
+    }
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
