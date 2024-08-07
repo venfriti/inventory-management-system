@@ -79,7 +79,12 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
                 })
             }
     ) {
-        var openDialog by remember { mutableStateOf(false) }
+        var selectedInventory by rememberSaveable { mutableStateOf<Inventory?>(null) }
+
+        var onOpenDialog: (Inventory) -> Unit = { inventory ->
+            selectedInventory = inventory
+        }
+
         val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
         val testProduct = Inventory(5, "container", 4)
 
@@ -120,24 +125,25 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
                 LoginDetails(name = "tolulope", icon = Icons.Filled.AccountCircle)
             }
         }
+
+
         InventoryGridList(
             searchResults,
-            onOpenDialog = { openDialog = true }
+            onOpenDialog = onOpenDialog
         )
 //        PopUpOverlay()
 
-        if (openDialog) {
+        selectedInventory?.let { inventory: Inventory ->
             BasicAlertDialog(
                 modifier = Modifier.padding(20.dp),
-                onDismissRequest = { openDialog = false },
+                onDismissRequest = { selectedInventory = null },
                 content = {
                     PopUpOverlay(
-                        testProduct
+                        inventory
                     )
                 }
             )
         }
-
     }
 }
 
@@ -217,10 +223,8 @@ fun SearchBar(
     onValueChange: (String) -> Unit,
     onClear: () -> Unit
 ) {
-
     val hint = "Search..."
     var text by rememberSaveable { mutableStateOf("") }
-
 
     TextField(
         value = searchQuery,
@@ -270,7 +274,7 @@ fun SearchBar(
 @Composable
 fun InventoryGridList(
     products: List<Inventory>,
-    onOpenDialog: () -> Unit,
+    onOpenDialog: (Inventory) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -281,9 +285,8 @@ fun InventoryGridList(
     ) {
         items(items = products, key = { it.id }) { product ->
             Product(
-                product.name,
-                product.amount,
-                onOpenDialog = onOpenDialog,
+                product,
+                onOpenDialog = { onOpenDialog(product) },
                 modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 16.dp)
             )
         }
@@ -292,9 +295,8 @@ fun InventoryGridList(
 
 @Composable
 fun Product(
-    name: String,
-    amount: Int,
-    onOpenDialog: () -> Unit,
+    product: Inventory,
+    onOpenDialog: (Inventory) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -321,12 +323,12 @@ fun Product(
             ) {
                 Column {
                     Text(
-                        text = stringResource(R.string.name, name),
+                        text = stringResource(R.string.name, product.name),
                         fontSize = 24.sp
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        text = stringResource(R.string.amount, amount),
+                        text = stringResource(R.string.amount, product.amount),
                         fontSize = 24.sp
                     )
                 }
@@ -340,7 +342,7 @@ fun Product(
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-                    onClick = onOpenDialog,
+                    onClick = { onOpenDialog(product) },
                     enabled = true,
                     shape = ShapeDefaults.Large,
                     colors = ButtonColors(
@@ -362,16 +364,16 @@ fun Product(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ProductPreview() {
-    InventoryManagementTheme {
-        Column {
-            Product(
-                "Bolts",
-                50,
-                onOpenDialog = {}
-            )
-        }
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ProductPreview() {
+//    InventoryManagementTheme {
+//        Column {
+//            Product(
+//                Inventory(1, "tolu", 50),
+//                50,
+//                onOpenDialog = {}
+//            )
+//        }
+//    }
+//}
