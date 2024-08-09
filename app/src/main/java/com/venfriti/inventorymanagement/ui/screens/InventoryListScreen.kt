@@ -40,6 +40,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,6 +55,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -63,6 +65,7 @@ import com.venfriti.inventorymanagement.data.Inventory
 import com.venfriti.inventorymanagement.ui.theme.InventoryManagementTheme
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 import com.venfriti.inventorymanagement.ui.theme.componentBackground
+import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -151,21 +154,22 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
 fun PopUpOverlay(
     product: Inventory
 ) {
+    val isAddStockClicked = remember { mutableStateOf(false) }
+    val isRemoveStockClicked = remember { mutableStateOf(false) }
+
+    var amount by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxHeight(0.5f)
-            .background(backgroundBlue)
+            .background(dirtyWhite)
             .padding(12.dp)
-            .clip(ShapeDefaults.Medium)
+            .clip(ShapeDefaults.Medium),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         ReusableBox(
-            text = stringResource(R.string.add_or_remove_inventory),
-            textStyle = MaterialTheme.typography.titleLarge,
-            textSize = 24.sp
-        )
-        Spacer(Modifier.height(24.dp))
-        ReusableBox(
-            text = stringResource(R.string.name_format, product.name),
+            text = product.name,
             textSize = 24.sp,
         )
         Spacer(Modifier.height(24.dp))
@@ -173,9 +177,79 @@ fun PopUpOverlay(
             text = stringResource(R.string.product_amount, product.amount),
             textSize = 24.sp
         )
-        HorizontalDivider(color = Color.Black)
+        Spacer(Modifier.height(24.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth(0.5f), color = Color.Black)
+        Spacer(Modifier.height(24.dp))
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 36.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            if(
+                !isRemoveStockClicked.value
+            ){
+                Button(
+                    onClick = { isAddStockClicked.value = !isAddStockClicked.value },
+                    colors = ButtonColors(
+                        containerColor = componentBackground,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White,
+                        disabledContainerColor = Color.Gray
+                    )
+                ) {
+                    Text(text = "Add Stock")
+                }
+            }
 
-
+            if (isAddStockClicked.value || isRemoveStockClicked.value) {
+                TextField(
+                    value = amount,
+                    onValueChange = { newValue ->
+                        if (newValue.all {it.isDigit()}){
+                            amount = newValue
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .height(50.dp)
+                        .fillMaxWidth(0.65f),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    placeholder = { Text(
+                        text = "Enter Stock Amount",
+                        fontSize = 16.sp
+                    ) },
+                    singleLine = true,
+                    maxLines = 1,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = backgroundBlue,
+                        unfocusedContainerColor = backgroundBlue,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                )
+            }
+            if (!isAddStockClicked.value) {
+                Button(
+                    onClick = {
+                        isRemoveStockClicked.value = !isRemoveStockClicked.value
+                    },
+                    colors = ButtonColors(
+                        containerColor = componentBackground,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White,
+                        disabledContainerColor = Color.Gray
+                    )
+                ) {
+                    Text(
+                        text = "Remove Stock"
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -183,10 +257,11 @@ fun PopUpOverlay(
 fun ReusableBox(
     text: String,
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
-    textSize: TextUnit
+    textSize: TextUnit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
         Text(
