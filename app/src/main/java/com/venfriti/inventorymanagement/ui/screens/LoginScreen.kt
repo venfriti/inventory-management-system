@@ -22,7 +22,7 @@ object LoginDestination : NavigationDestination {
 
 @Composable
 fun LoginScreen(
-    navigateToHomeScreen: () -> Unit,
+    onLogin: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     Box(
@@ -32,7 +32,7 @@ fun LoginScreen(
         Column {
             Text(text = "Scan your card to login")
             Button(
-                onClick = navigateToHomeScreen
+                onClick = onLogin
             ) {
                 Text(text = "Login Anyway")
             }

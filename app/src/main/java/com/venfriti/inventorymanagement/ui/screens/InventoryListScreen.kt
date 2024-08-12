@@ -84,6 +84,7 @@ object HomeDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryHomeScreen(
+    onLogout: () -> Unit,
     viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -91,7 +92,7 @@ fun InventoryHomeScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { InventoryTopAppBar(scrollBehavior = scrollBehavior) }
     ) { innerPadding ->
-        InventoryHomeBody(viewModel, innerPadding)
+        InventoryHomeBody(onLogout, viewModel, innerPadding)
     }
 }
 
@@ -99,7 +100,11 @@ fun InventoryHomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InventoryHomeBody(viewModel: InventoryViewModel, contentPadding: PaddingValues) {
+fun InventoryHomeBody(
+    onLogout: () -> Unit,
+    viewModel: InventoryViewModel,
+    contentPadding: PaddingValues
+) {
     val focusManager = LocalFocusManager.current
     Column(
         modifier = Modifier
@@ -127,9 +132,22 @@ fun InventoryHomeBody(viewModel: InventoryViewModel, contentPadding: PaddingValu
             Box(
                 modifier = Modifier
                     .weight(2f)
-                    .background(Color.Red),
+                    .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
+                Button(
+                    onClick = viewModel::addInventoryList,
+                    modifier = Modifier
+                        .height(50.dp),
+                    colors = ButtonColors(
+                        containerColor = componentBackground,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White,
+                        disabledContainerColor = Color.Gray
+                    )
+                ) {
+                    Text(text = "Populate")
+                }
             }
             Box(
                 modifier = Modifier.weight(5f),

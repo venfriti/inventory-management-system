@@ -29,6 +29,10 @@ class InventoryViewModel(
     )
 
     init {
+
+    }
+
+    fun addInventoryList() {
         viewModelScope.launch {
             inventoryRepository.addInventoryList(products)
         }

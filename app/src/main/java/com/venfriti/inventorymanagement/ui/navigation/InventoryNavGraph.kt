@@ -1,6 +1,10 @@
 package com.venfriti.inventorymanagement.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,18 +20,32 @@ fun InventoryNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    var isAuthenticated by remember { mutableStateOf(false) }
+
     NavHost(
         navController = navController,
-        startDestination = LoginDestination.route,
+        startDestination = if (isAuthenticated) HomeDestination.route else LoginDestination.route,
         modifier = modifier
     ) {
         composable(route = LoginDestination.route) {
             LoginScreen(
-                navigateToHomeScreen = { navController.navigate(HomeDestination.route)}
+                onLogin = {
+                    isAuthenticated = true
+                    navController.navigate(HomeDestination.route) {
+                        popUpTo(LoginDestination.route) { inclusive = true }
+                    }
+                }
             )
         }
         composable(route = HomeDestination.route) {
-            InventoryHomeScreen()
+            InventoryHomeScreen(
+                onLogout = {
+                    isAuthenticated = false
+                    navController.navigate(LoginDestination.route) {
+                        popUpTo(HomeDestination.route) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
