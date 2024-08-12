@@ -22,25 +22,28 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,27 +53,53 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.venfriti.inventorymanagement.R
 import com.venfriti.inventorymanagement.data.Inventory
-import com.venfriti.inventorymanagement.ui.theme.InventoryManagementTheme
+import com.venfriti.inventorymanagement.ui.AppViewModelProvider
+import com.venfriti.inventorymanagement.ui.InventoryTopAppBar
+import com.venfriti.inventorymanagement.ui.LoginDetails
+import com.venfriti.inventorymanagement.ui.SearchBar
+import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 import com.venfriti.inventorymanagement.ui.theme.componentBackground
 import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
 
 
+object HomeDestination : NavigationDestination {
+    override val route = "home"
+    override val titleRes = R.string.app_name
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingValues) {
+fun InventoryHomeScreen(
+    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+){
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = { InventoryTopAppBar(scrollBehavior = scrollBehavior) }
+    ) { innerPadding ->
+        InventoryHomeBody(viewModel, innerPadding)
+    }
+}
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InventoryHomeBody(viewModel: InventoryViewModel, contentPadding: PaddingValues) {
     val focusManager = LocalFocusManager.current
     Column(
         modifier = Modifier
@@ -89,8 +118,6 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
         }
 
         val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
-        val testProduct = Inventory(5, "container", 4)
-
         var textInput by rememberSaveable { mutableStateOf("") }
 
         Row(
@@ -125,14 +152,17 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
                 modifier = Modifier.weight(3f),
                 contentAlignment = Alignment.Center
             ) {
-                LoginDetails(name = "tolulope", icon = Icons.Filled.AccountCircle)
+                LoginDetails(
+                    name = stringResource(R.string.account_name),
+                    icon = Icons.Filled.AccountCircle
+                )
             }
         }
 
 
         InventoryGridList(
             searchResults,
-            onOpenDialog = onOpenDialog
+            onOpenDialog = onOpenDialog,
         )
 //        PopUpOverlay()
 
@@ -142,7 +172,8 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
                 onDismissRequest = { selectedInventory = null },
                 content = {
                     PopUpOverlay(
-                        inventory
+                        inventory,
+                        viewModel
                     )
                 }
             )
@@ -152,7 +183,8 @@ fun InventoryHomeScreen(viewModel: InventoryViewModel, contentPadding: PaddingVa
 
 @Composable
 fun PopUpOverlay(
-    product: Inventory
+    product: Inventory,
+    viewModel: InventoryViewModel
 ) {
     val isAddStockClicked = remember { mutableStateOf(false) }
     val isRemoveStockClicked = remember { mutableStateOf(false) }
@@ -190,7 +222,16 @@ fun PopUpOverlay(
                 !isRemoveStockClicked.value
             ){
                 Button(
-                    onClick = { isAddStockClicked.value = !isAddStockClicked.value },
+                    onClick = {
+                        isAddStockClicked.value = true
+                        if (isAddStockClicked.value) {
+                            if (amount == "") { }
+                            else { viewModel.addStock(product, amount.toInt()) }
+                        }
+                              },
+                    modifier = Modifier
+                        .height(50.dp)
+                        .weight(3f),
                     colors = ButtonColors(
                         containerColor = componentBackground,
                         contentColor = Color.White,
@@ -200,6 +241,7 @@ fun PopUpOverlay(
                 ) {
                     Text(text = "Add Stock")
                 }
+                Spacer(modifier = Modifier.weight(1f))
             }
 
             if (isAddStockClicked.value || isRemoveStockClicked.value) {
@@ -211,17 +253,43 @@ fun PopUpOverlay(
                         }
                     },
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
                         .height(50.dp)
-                        .fillMaxWidth(0.65f),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
+                        .weight(3f),
                     placeholder = { Text(
                         text = "Enter Stock Amount",
                         fontSize = 16.sp
                     ) },
+                    leadingIcon = {
+                        IconButton(onClick = {
+                            if (amount == "" || amount == "0"){}
+                            else {
+                                amount = (amount.toInt() - 1).toString()
+                            }
+                        }) {
+                            Icon(
+                                Icons.Filled.Remove,
+                                contentDescription = "Remove Stock"
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            amount = if (amount == "") {
+                                "1"
+                            } else {
+                                (amount.toInt() + 1).toString()
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = "Add Stock"
+                            )
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
                     singleLine = true,
                     maxLines = 1,
                     colors = TextFieldDefaults.colors(
@@ -232,11 +300,17 @@ fun PopUpOverlay(
                     ),
                 )
             }
+            if (isRemoveStockClicked.value){
+                Spacer(modifier = Modifier.weight(1f))
+            }
             if (!isAddStockClicked.value) {
                 Button(
                     onClick = {
                         isRemoveStockClicked.value = !isRemoveStockClicked.value
                     },
+                    modifier = Modifier
+                        .height(50.dp)
+                        .weight(3f),
                     colors = ButtonColors(
                         containerColor = componentBackground,
                         contentColor = Color.White,
@@ -271,79 +345,6 @@ fun ReusableBox(
             fontSize = textSize
         )
     }
-}
-
-@Composable
-fun LoginDetails(name: String, icon: ImageVector) {
-    Row(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
-    ) {
-        Text(text = name, fontSize = 18.sp, modifier = Modifier.padding(vertical = 12.dp))
-        Spacer(modifier = Modifier.width(8.dp))
-        Icon(
-            imageVector = icon,
-            contentDescription = "Profile Picture",
-            modifier = Modifier.size(48.dp)
-        )
-    }
-}
-
-@Composable
-fun SearchBar(
-    searchQuery: String,
-    onSearch: (String) -> Unit,
-    onValueChange: (String) -> Unit,
-    onClear: () -> Unit
-) {
-    val hint = "Search..."
-    var text by rememberSaveable { mutableStateOf("") }
-
-    TextField(
-        value = searchQuery,
-        onValueChange = {
-            text = it
-            onValueChange(text)
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .height(55.dp),
-        placeholder = { Text(text = hint) },
-        singleLine = true,
-        maxLines = 1,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = backgroundBlue,
-            unfocusedContainerColor = backgroundBlue,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Search
-        ),
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                onSearch(text)
-            }
-        ),
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "SearchIcon"
-            )
-        },
-        trailingIcon = {
-            IconButton(onClick = onClear) {
-                Icon(
-                    imageVector = Icons.Filled.Clear,
-                    contentDescription = "Clear Search"
-                )
-            }
-        },
-        shape = ShapeDefaults.ExtraLarge
-    )
 }
 
 @Composable
@@ -438,17 +439,3 @@ fun Product(
 
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun ProductPreview() {
-//    InventoryManagementTheme {
-//        Column {
-//            Product(
-//                Inventory(1, "tolu", 50),
-//                50,
-//                onOpenDialog = {}
-//            )
-//        }
-//    }
-//}

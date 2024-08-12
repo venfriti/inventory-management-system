@@ -8,5 +8,5 @@ import androidx.room.PrimaryKey
 data class Inventory(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val amount: Int
+    var amount: Int
 )

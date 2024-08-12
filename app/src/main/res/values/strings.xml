@@ -5,4 +5,5 @@
     <string name="add_or_remove_inventory">Add/Remove Inventory</string>
     <string name="product_amount">Total Stock: %1$s</string>
     <string name="name_format">Name: %1$s</string>
+    <string name="account_name">tolulope</string>
 </resources>

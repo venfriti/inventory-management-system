@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class InventoryViewModel(
     savedStateHandle: SavedStateHandle,
-    inventoryRepository: InventoryRepository
+    private val inventoryRepository: InventoryRepository
 ): ViewModel() {
 
     private val products = listOf(
@@ -46,6 +46,14 @@ class InventoryViewModel(
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun addStock(product: Inventory, stockSize: Int) {
+        val newSize = product.amount + stockSize
+        product.amount = newSize
+        viewModelScope.launch {
+            inventoryRepository.updateInventory(product)
+        }
     }
 
 }
