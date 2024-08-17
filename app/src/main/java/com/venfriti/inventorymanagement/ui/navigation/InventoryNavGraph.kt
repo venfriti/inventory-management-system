@@ -1,6 +1,7 @@
 package com.venfriti.inventorymanagement.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -9,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.venfriti.inventorymanagement.ui.network.WebSocketManager
+import com.venfriti.inventorymanagement.ui.network.setupWebSocket
 import com.venfriti.inventorymanagement.ui.screens.HomeDestination
 import com.venfriti.inventorymanagement.ui.screens.InventoryHomeScreen
 import com.venfriti.inventorymanagement.ui.screens.LoginDestination
@@ -21,6 +24,13 @@ fun InventoryNavHost(
     modifier: Modifier = Modifier
 ) {
     var isAuthenticated by remember { mutableStateOf(false) }
+    val webSocketManager = remember { WebSocketManager() }
+
+    LaunchedEffect(Unit) {
+        setupWebSocket { success ->
+            isAuthenticated = success
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -29,6 +39,7 @@ fun InventoryNavHost(
     ) {
         composable(route = LoginDestination.route) {
             LoginScreen(
+                webSocketManager = webSocketManager,
                 onLogin = {
                     isAuthenticated = true
                     navController.navigate(HomeDestination.route) {
@@ -49,3 +60,4 @@ fun InventoryNavHost(
         }
     }
 }
+

@@ -1,5 +1,6 @@
 package com.venfriti.inventorymanagement.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -96,8 +98,6 @@ fun InventoryHomeScreen(
     }
 }
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryHomeBody(
@@ -106,6 +106,7 @@ fun InventoryHomeBody(
     contentPadding: PaddingValues
 ) {
     val focusManager = LocalFocusManager.current
+
     Column(
         modifier = Modifier
             .padding(contentPadding)
@@ -137,8 +138,7 @@ fun InventoryHomeBody(
             ) {
                 Button(
                     onClick = viewModel::addInventoryList,
-                    modifier = Modifier
-                        .height(50.dp),
+                    modifier = Modifier,
                     colors = ButtonColors(
                         containerColor = componentBackground,
                         contentColor = Color.White,
@@ -177,12 +177,10 @@ fun InventoryHomeBody(
             }
         }
 
-
         InventoryGridList(
             searchResults,
             onOpenDialog = onOpenDialog,
         )
-//        PopUpOverlay()
 
         selectedInventory?.let { inventory: Inventory ->
             BasicAlertDialog(
@@ -191,7 +189,8 @@ fun InventoryHomeBody(
                 content = {
                     PopUpOverlay(
                         inventory,
-                        viewModel
+                        viewModel,
+                        onClose = { selectedInventory = null },
                     )
                 }
             )
@@ -202,11 +201,11 @@ fun InventoryHomeBody(
 @Composable
 fun PopUpOverlay(
     product: Inventory,
-    viewModel: InventoryViewModel
+    viewModel: InventoryViewModel,
+    onClose: () -> Unit,
 ) {
     val isAddStockClicked = remember { mutableStateOf(false) }
     val isRemoveStockClicked = remember { mutableStateOf(false) }
-
     var amount by remember { mutableStateOf("") }
 
     Column(
@@ -244,7 +243,10 @@ fun PopUpOverlay(
                         isAddStockClicked.value = true
                         if (isAddStockClicked.value) {
                             if (amount == "") { }
-                            else { viewModel.addStock(product, amount.toInt()) }
+                            else {
+                                viewModel.addStock(product, amount.toInt())
+                                onClose()
+                            }
                         }
                               },
                     modifier = Modifier
@@ -324,7 +326,14 @@ fun PopUpOverlay(
             if (!isAddStockClicked.value) {
                 Button(
                     onClick = {
-                        isRemoveStockClicked.value = !isRemoveStockClicked.value
+                        isRemoveStockClicked.value = true
+                        if (isRemoveStockClicked.value) {
+                            if (amount == "" || (amount.toInt()>product.amount)) { }
+                            else {
+                                viewModel.removeStock(product, amount.toInt())
+                                onClose()
+                            }
+                        }
                     },
                     modifier = Modifier
                         .height(50.dp)
@@ -345,6 +354,16 @@ fun PopUpOverlay(
     }
 }
 
+@Composable
+fun ShowToast(amount: Int) {
+    val context = LocalContext.current
+    var showToast by remember { mutableStateOf(false) }
+
+    if (showToast) {
+        Toast.makeText(context, "This is a toast Message! $amount items", Toast.LENGTH_SHORT).show()
+        showToast = false
+    }
+}
 @Composable
 fun ReusableBox(
     text: String,
@@ -452,8 +471,6 @@ fun Product(
                     )
                 }
             }
-
         }
-
     }
 }

@@ -60,4 +60,12 @@ class InventoryViewModel(
         }
     }
 
+    fun removeStock(product: Inventory, stockSize: Int) {
+        val newSize = product.amount - stockSize
+        product.amount = newSize
+        viewModelScope.launch {
+            inventoryRepository.updateInventory(product)
+        }
+    }
+
 }
