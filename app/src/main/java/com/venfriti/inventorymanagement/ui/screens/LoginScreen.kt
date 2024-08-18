@@ -48,8 +48,6 @@ fun LoginScreen(
             ) {
                 Text(text = "Login Anyway")
             }
-            Text(text = "Feedback Message: $receivedMessage")
-
         }
     }
     LaunchedEffect(Unit) {

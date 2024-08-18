@@ -14,19 +14,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -37,14 +32,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -53,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -75,7 +70,7 @@ import com.venfriti.inventorymanagement.ui.SearchBar
 import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 import com.venfriti.inventorymanagement.ui.theme.componentBackground
-import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
+import kotlinx.coroutines.delay
 
 
 object HomeDestination : NavigationDestination {
@@ -88,7 +83,7 @@ object HomeDestination : NavigationDestination {
 fun InventoryHomeScreen(
     onLogout: () -> Unit,
     viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
-){
+) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -106,16 +101,37 @@ fun InventoryHomeBody(
     contentPadding: PaddingValues
 ) {
     val focusManager = LocalFocusManager.current
+    var lastInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
+    fun resetTimer() {
+        lastInteractionTime = System.currentTimeMillis()
+    }
+
+    var testing by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    testing = System.currentTimeMillis()
+    var difference by remember { mutableLongStateOf(0L) }
+    difference = testing - lastInteractionTime
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000) // Check every second
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastInteractionTime > 180000) { // 30 seconds timeout
+                onLogout()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
-            .padding(contentPadding)
-            .padding(horizontal = 36.dp)
             .pointerInput(Unit) {
                 detectTapGestures(onTap = {
                     focusManager.clearFocus()
+                    resetTimer()
                 })
             }
+            .padding(contentPadding)
+            .padding(horizontal = 36.dp)
     ) {
         var selectedInventory by rememberSaveable { mutableStateOf<Inventory?>(null) }
 
@@ -146,7 +162,7 @@ fun InventoryHomeBody(
                         disabledContainerColor = Color.Gray
                     )
                 ) {
-                    Text(text = "Populate")
+                    Text(text = difference.toString())
                 }
             }
             Box(
@@ -159,10 +175,12 @@ fun InventoryHomeBody(
                     onValueChange = {
                         textInput = it
                         viewModel.setSearchQuery(it)
+                        resetTimer()
                     },
                     onClear = {
                         textInput = ""
                         viewModel.setSearchQuery("")
+                        resetTimer()
                     }
                 )
             }
@@ -180,6 +198,7 @@ fun InventoryHomeBody(
         InventoryGridList(
             searchResults,
             onOpenDialog = onOpenDialog,
+            resetTimer = { resetTimer() }
         )
 
         selectedInventory?.let { inventory: Inventory ->
@@ -191,6 +210,7 @@ fun InventoryHomeBody(
                         inventory,
                         viewModel,
                         onClose = { selectedInventory = null },
+                        resetTimer = { resetTimer() }
                     )
                 }
             )
@@ -203,15 +223,17 @@ fun PopUpOverlay(
     product: Inventory,
     viewModel: InventoryViewModel,
     onClose: () -> Unit,
+    resetTimer: () -> Unit,
 ) {
     val isAddStockClicked = remember { mutableStateOf(false) }
     val isRemoveStockClicked = remember { mutableStateOf(false) }
     var amount by remember { mutableStateOf("") }
 
+
     Column(
         modifier = Modifier
             .fillMaxHeight(0.5f)
-            .background(dirtyWhite)
+            .background(Color.LightGray)
             .padding(12.dp)
             .clip(ShapeDefaults.Medium),
         verticalArrangement = Arrangement.Center,
@@ -235,20 +257,21 @@ fun PopUpOverlay(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            if(
+            if (
                 !isRemoveStockClicked.value
-            ){
+            ) {
                 Button(
                     onClick = {
                         isAddStockClicked.value = true
                         if (isAddStockClicked.value) {
-                            if (amount == "") { }
-                            else {
+                            if (amount == "") {
+                            } else {
                                 viewModel.addStock(product, amount.toInt())
                                 onClose()
                             }
                         }
-                              },
+                        resetTimer()
+                    },
                     modifier = Modifier
                         .height(50.dp)
                         .weight(3f),
@@ -268,21 +291,23 @@ fun PopUpOverlay(
                 TextField(
                     value = amount,
                     onValueChange = { newValue ->
-                        if (newValue.all {it.isDigit()}){
+                        if (newValue.all { it.isDigit() }) {
                             amount = newValue
                         }
                     },
                     modifier = Modifier
                         .height(50.dp)
                         .weight(3f),
-                    placeholder = { Text(
-                        text = "Enter Stock Amount",
-                        fontSize = 16.sp
-                    ) },
+                    placeholder = {
+                        Text(
+                            text = "Enter Stock Amount",
+                            fontSize = 16.sp
+                        )
+                    },
                     leadingIcon = {
                         IconButton(onClick = {
-                            if (amount == "" || amount == "0"){}
-                            else {
+                            if (amount == "" || amount == "0") {
+                            } else {
                                 amount = (amount.toInt() - 1).toString()
                             }
                         }) {
@@ -320,7 +345,7 @@ fun PopUpOverlay(
                     ),
                 )
             }
-            if (isRemoveStockClicked.value){
+            if (isRemoveStockClicked.value) {
                 Spacer(modifier = Modifier.weight(1f))
             }
             if (!isAddStockClicked.value) {
@@ -328,12 +353,13 @@ fun PopUpOverlay(
                     onClick = {
                         isRemoveStockClicked.value = true
                         if (isRemoveStockClicked.value) {
-                            if (amount == "" || (amount.toInt()>product.amount)) { }
-                            else {
+                            if (amount == "" || (amount.toInt() > product.amount)) {
+                            } else {
                                 viewModel.removeStock(product, amount.toInt())
                                 onClose()
                             }
                         }
+                        resetTimer
                     },
                     modifier = Modifier
                         .height(50.dp)
@@ -364,6 +390,7 @@ fun ShowToast(amount: Int) {
         showToast = false
     }
 }
+
 @Composable
 fun ReusableBox(
     text: String,
@@ -389,7 +416,8 @@ fun InventoryGridList(
     products: List<Inventory>,
     onOpenDialog: (Inventory) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp)
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    resetTimer: () -> Unit
 ) {
     LazyVerticalGrid(
         modifier = Modifier.padding(vertical = 16.dp),
@@ -400,7 +428,8 @@ fun InventoryGridList(
             Product(
                 product,
                 onOpenDialog = { onOpenDialog(product) },
-                modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 16.dp)
+                modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 16.dp),
+                resetTimer = resetTimer
             )
         }
     }
@@ -410,7 +439,8 @@ fun InventoryGridList(
 fun Product(
     product: Inventory,
     onOpenDialog: (Inventory) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    resetTimer: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -455,9 +485,12 @@ fun Product(
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-                    onClick = { onOpenDialog(product) },
+                    onClick = {
+                        onOpenDialog(product)
+                        resetTimer()
+                              },
                     enabled = true,
-                    shape = ShapeDefaults.Large,
+                    shape = ShapeDefaults.Medium,
                     colors = ButtonColors(
                         containerColor = componentBackground,
                         contentColor = Color.White,
