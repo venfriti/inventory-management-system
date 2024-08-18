@@ -9,13 +9,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.venfriti.inventorymanagement.R
 import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
-import com.venfriti.inventorymanagement.ui.network.WebSocketManager
+import com.venfriti.inventorymanagement.utils.initSocketIO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 object LoginDestination : NavigationDestination {
@@ -25,10 +32,11 @@ object LoginDestination : NavigationDestination {
 
 @Composable
 fun LoginScreen(
-    webSocketManager: WebSocketManager,
     onLogin: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
+    var receivedMessage by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
@@ -39,6 +47,18 @@ fun LoginScreen(
                 onClick = onLogin
             ) {
                 Text(text = "Login Anyway")
+            }
+            Text(text = "Feedback Message: $receivedMessage")
+
+        }
+    }
+    LaunchedEffect(Unit) {
+        initSocketIO { receivedText ->
+            scope.launch(Dispatchers.Main) {
+                receivedMessage = receivedText
+                if (receivedMessage == "success"){
+                    onLogin()
+                }
             }
         }
     }
