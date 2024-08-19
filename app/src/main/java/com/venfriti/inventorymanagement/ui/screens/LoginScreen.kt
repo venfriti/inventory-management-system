@@ -2,12 +2,10 @@ package com.venfriti.inventorymanagement.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,8 +14,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import com.venfriti.inventorymanagement.R
 import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.utils.initSocketIO
@@ -32,8 +28,7 @@ object LoginDestination : NavigationDestination {
 
 @Composable
 fun LoginScreen(
-    onLogin: () -> Unit,
-    contentPadding: PaddingValues = PaddingValues(0.dp)
+    onLogin: (String) -> Unit
 ) {
     var receivedMessage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -44,18 +39,18 @@ fun LoginScreen(
         Column {
             Text(text = "Scan your card to login")
             Button(
-                onClick = onLogin
+                onClick = { onLogin("Test") }
             ) {
                 Text(text = "Login Anyway")
             }
         }
     }
     LaunchedEffect(Unit) {
-        initSocketIO { receivedText ->
+        initSocketIO { name, receivedText ->
             scope.launch(Dispatchers.Main) {
                 receivedMessage = receivedText
                 if (receivedMessage == "success"){
-                    onLogin()
+                    onLogin(name)
                 }
             }
         }

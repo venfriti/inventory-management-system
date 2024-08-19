@@ -74,13 +74,15 @@ import kotlinx.coroutines.delay
 
 
 object HomeDestination : NavigationDestination {
-    override val route = "home"
+    override val route = "home/{name}"
     override val titleRes = R.string.app_name
+    fun createRoute(name: String) = "home/$name"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryHomeScreen(
+    name: String?,
     onLogout: () -> Unit,
     viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -89,13 +91,14 @@ fun InventoryHomeScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { InventoryTopAppBar(scrollBehavior = scrollBehavior) }
     ) { innerPadding ->
-        InventoryHomeBody(onLogout, viewModel, innerPadding)
+        InventoryHomeBody(name, onLogout, viewModel, innerPadding)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryHomeBody(
+    name: String?,
     onLogout: () -> Unit,
     viewModel: InventoryViewModel,
     contentPadding: PaddingValues
@@ -107,15 +110,14 @@ fun InventoryHomeBody(
         lastInteractionTime = System.currentTimeMillis()
     }
 
-    var testing by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    testing = System.currentTimeMillis()
+    var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    currentTime = System.currentTimeMillis()
     var difference by remember { mutableLongStateOf(0L) }
-    difference = testing - lastInteractionTime
+    difference = currentTime - lastInteractionTime
 
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000) // Check every second
-            val currentTime = System.currentTimeMillis()
             if (currentTime - lastInteractionTime > 180000) { // 30 seconds timeout
                 onLogout()
             }
@@ -134,13 +136,12 @@ fun InventoryHomeBody(
             .padding(horizontal = 36.dp)
     ) {
         var selectedInventory by rememberSaveable { mutableStateOf<Inventory?>(null) }
+        val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
+        var textInput by rememberSaveable { mutableStateOf("") }
 
         var onOpenDialog: (Inventory) -> Unit = { inventory ->
             selectedInventory = inventory
         }
-
-        val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
-        var textInput by rememberSaveable { mutableStateOf("") }
 
         Row(
             modifier = Modifier
@@ -189,7 +190,7 @@ fun InventoryHomeBody(
                 contentAlignment = Alignment.Center
             ) {
                 LoginDetails(
-                    name = stringResource(R.string.account_name),
+                    name = name ?: "No Account",
                     icon = Icons.Filled.AccountCircle
                 )
             }
@@ -209,6 +210,7 @@ fun InventoryHomeBody(
                     PopUpOverlay(
                         inventory,
                         viewModel,
+                        difference,
                         onClose = { selectedInventory = null },
                         resetTimer = { resetTimer() }
                     )
@@ -222,13 +224,18 @@ fun InventoryHomeBody(
 fun PopUpOverlay(
     product: Inventory,
     viewModel: InventoryViewModel,
+    lastInteractionTime: Long,
     onClose: () -> Unit,
     resetTimer: () -> Unit,
 ) {
+    val context = LocalContext.current
     val isAddStockClicked = remember { mutableStateOf(false) }
     val isRemoveStockClicked = remember { mutableStateOf(false) }
     var amount by remember { mutableStateOf("") }
 
+    if (lastInteractionTime > 90000) {
+        onClose()
+    }
 
     Column(
         modifier = Modifier
@@ -265,9 +272,20 @@ fun PopUpOverlay(
                         isAddStockClicked.value = true
                         if (isAddStockClicked.value) {
                             if (amount == "") {
+                                Toast.makeText(
+                                    context,
+                                    "Enter Stock amount",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             } else {
                                 viewModel.addStock(product, amount.toInt())
                                 onClose()
+                                Toast.makeText(
+                                    context,
+                                    if (amount == "1"){"Item added"}
+                                    else {"$amount ${product.name} added"},
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         }
                         resetTimer()
@@ -353,10 +371,31 @@ fun PopUpOverlay(
                     onClick = {
                         isRemoveStockClicked.value = true
                         if (isRemoveStockClicked.value) {
-                            if (amount == "" || (amount.toInt() > product.amount)) {
-                            } else {
-                                viewModel.removeStock(product, amount.toInt())
-                                onClose()
+                            when {
+                                amount == ""  -> {
+                                    Toast.makeText(
+                                        context,
+                                        "Enter Stock Amount",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                amount.toInt() > product.amount -> {
+                                    Toast.makeText(
+                                        context,
+                                        "Not enough stock",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                else -> {
+                                    viewModel.removeStock(product, amount.toInt())
+                                    onClose()
+                                    Toast.makeText(
+                                        context,
+                                        if (amount == "1"){"Item removed"}
+                                        else {"$amount ${product.name} removed"},
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
                         }
                         resetTimer
@@ -488,7 +527,7 @@ fun Product(
                     onClick = {
                         onOpenDialog(product)
                         resetTimer()
-                              },
+                    },
                     enabled = true,
                     shape = ShapeDefaults.Medium,
                     colors = ButtonColors(

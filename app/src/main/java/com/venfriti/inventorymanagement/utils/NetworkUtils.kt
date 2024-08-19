@@ -7,9 +7,9 @@ import org.json.JSONObject
 
 private lateinit var socket: Socket
 
-fun initSocketIO(onMessageReceived: (String) -> Unit) {
+fun initSocketIO(onMessageReceived: (String, String) -> Unit) {
     try {
-        socket = IO.socket("http://192.168.0.2:5000")
+        socket = IO.socket("http://192.168.0.101:5000")
 
         socket.on(Socket.EVENT_CONNECT) {
             println("Socket.IO Connected")
@@ -17,17 +17,13 @@ fun initSocketIO(onMessageReceived: (String) -> Unit) {
 
         socket.on("message") { args ->
             if (args.isNotEmpty()) {
-                val msg = args[0]
-                if (msg is String) {
-                    try {
-                        val jsonObject = JSONObject(msg)
-                        val text = jsonObject.getString("text")
-                        onMessageReceived(text)
-                    } catch (e: Exception) {
-                        onMessageReceived(msg)
-                    }
+                val msg = args[0] as? JSONObject
+                if (msg != null) {
+                    val sender = msg.getString("name")
+                    val text = msg.getString("message")
+                    onMessageReceived(sender, text)
                 } else {
-                    println("Received unknown message type: $msg")
+                    println("No valid message received")
                 }
             }
         }
