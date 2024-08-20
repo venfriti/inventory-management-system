@@ -26,6 +26,7 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +54,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -70,6 +72,8 @@ import com.venfriti.inventorymanagement.ui.SearchBar
 import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 import com.venfriti.inventorymanagement.ui.theme.componentBackground
+import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
+import com.venfriti.inventorymanagement.ui.theme.lightBlue
 import kotlinx.coroutines.delay
 
 
@@ -86,12 +90,102 @@ fun InventoryHomeScreen(
     onLogout: () -> Unit,
     viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    var addInventory by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { InventoryTopAppBar(scrollBehavior = scrollBehavior) }
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            InventoryTopAppBar(scrollBehavior = scrollBehavior)
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { addInventory = true },
+                shape = MaterialTheme.shapes.extraLarge,
+                containerColor = backgroundBlue,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Inventory",
+                )
+            }
+        },
     ) { innerPadding ->
         InventoryHomeBody(name, onLogout, viewModel, innerPadding)
+        if (addInventory){
+            BasicAlertDialog(
+                modifier = Modifier.padding(20.dp),
+                onDismissRequest = { addInventory = false },
+                content = {
+                    AddInventoryDialog(
+                        viewModel,
+                        lastInteractionTime = 0,
+                        onClose = { addInventory = false },
+                        resetTimer = {}
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun AddInventoryDialog(
+    viewModel: InventoryViewModel,
+    lastInteractionTime: Long,
+    onClose: () -> Unit,
+    resetTimer: () -> Unit,
+) {
+    val context = LocalContext.current
+    if (lastInteractionTime > 90000) {
+        onClose()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxHeight(0.5f)
+            .background(dirtyWhite)
+            .padding(12.dp)
+            .clip(ShapeDefaults.Medium),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Product",
+            fontSize = 24.sp,
+        )
+        Spacer(Modifier.height(24.dp))
+        ReusableBox(
+            text = "checker",
+            textSize = 24.sp
+        )
+        Spacer(Modifier.height(24.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth(0.5f), color = Color.Black)
+        Spacer(Modifier.height(24.dp))
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 36.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = {
+                    resetTimer()
+                },
+                modifier = Modifier
+                    .height(50.dp)
+                    .weight(3f),
+                colors = ButtonColors(
+                    containerColor = componentBackground,
+                    contentColor = Color.White,
+                    disabledContentColor = Color.White,
+                    disabledContainerColor = Color.Gray
+                )
+            ) {
+                Text(text = "Add Stock")
+            }
+        }
     }
 }
 
@@ -118,7 +212,7 @@ fun InventoryHomeBody(
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000) // Check every second
-            if (currentTime - lastInteractionTime > 180000) { // 30 seconds timeout
+            if (currentTime - lastInteractionTime > 300000) { // 5 minutes timeout
                 onLogout()
             }
         }
@@ -187,7 +281,7 @@ fun InventoryHomeBody(
             }
             Box(
                 modifier = Modifier.weight(3f),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 LoginDetails(
                     name = name ?: "No Account",
@@ -240,7 +334,7 @@ fun PopUpOverlay(
     Column(
         modifier = Modifier
             .fillMaxHeight(0.5f)
-            .background(Color.LightGray)
+            .background(dirtyWhite)
             .padding(12.dp)
             .clip(ShapeDefaults.Medium),
         verticalArrangement = Arrangement.Center,
@@ -256,7 +350,7 @@ fun PopUpOverlay(
             textSize = 24.sp
         )
         Spacer(Modifier.height(24.dp))
-        HorizontalDivider(modifier = Modifier.fillMaxWidth(0.5f), color = Color.Black)
+        HorizontalDivider(modifier = Modifier.fillMaxWidth(0.6f), color = Color.Black)
         Spacer(Modifier.height(24.dp))
         Row(
             modifier = Modifier
@@ -324,8 +418,7 @@ fun PopUpOverlay(
                     },
                     leadingIcon = {
                         IconButton(onClick = {
-                            if (amount == "" || amount == "0") {
-                            } else {
+                            if (amount != "" && amount != "0") {
                                 amount = (amount.toInt() - 1).toString()
                             }
                         }) {
@@ -416,17 +509,6 @@ fun PopUpOverlay(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ShowToast(amount: Int) {
-    val context = LocalContext.current
-    var showToast by remember { mutableStateOf(false) }
-
-    if (showToast) {
-        Toast.makeText(context, "This is a toast Message! $amount items", Toast.LENGTH_SHORT).show()
-        showToast = false
     }
 }
 

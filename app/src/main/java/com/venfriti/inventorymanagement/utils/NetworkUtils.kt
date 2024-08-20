@@ -9,7 +9,7 @@ private lateinit var socket: Socket
 
 fun initSocketIO(onMessageReceived: (String, String) -> Unit) {
     try {
-        socket = IO.socket("http://192.168.0.101:5000")
+        socket = IO.socket("http://192.168.0.102:5000")
 
         socket.on(Socket.EVENT_CONNECT) {
             println("Socket.IO Connected")
