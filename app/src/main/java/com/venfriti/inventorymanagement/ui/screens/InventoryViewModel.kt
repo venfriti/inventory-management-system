@@ -25,7 +25,7 @@ class InventoryViewModel(
         Inventory(5, "panes", 5),
         Inventory(6, "bowls", 10),
         Inventory(7, "fans", 5),
-        Inventory(8, "containers", 10),
+        Inventory(8, "boxes", 10),
     )
 
     init {

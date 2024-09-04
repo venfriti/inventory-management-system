@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.venfriti.inventorymanagement.ui.theme.InventoryManagementTheme
+import com.venfriti.inventorymanagement.utils.RecordCheck.isAuthenticated
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,5 +18,10 @@ class MainActivity : ComponentActivity() {
                 InventoryApp()
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isAuthenticated = false
     }
 }

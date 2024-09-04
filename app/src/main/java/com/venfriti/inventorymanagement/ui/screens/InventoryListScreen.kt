@@ -257,7 +257,7 @@ fun InventoryHomeBody(
                         disabledContainerColor = Color.Gray
                     )
                 ) {
-                    Text(text = difference.toString())
+                    Text(text = "populate")
                 }
             }
             Box(
