@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation("io.socket:socket.io-client:2.0.1")
     implementation("org.json:json:20210307")
+    implementation("org.java-websocket:Java-WebSocket:1.5.2")
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.common)

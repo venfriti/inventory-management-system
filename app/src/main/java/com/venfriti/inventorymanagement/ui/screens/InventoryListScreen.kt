@@ -212,7 +212,7 @@ fun InventoryHomeBody(
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000) // Check every second
-            if (currentTime - lastInteractionTime > 300000) { // 5 minutes timeout
+            if (currentTime - lastInteractionTime > 30000) { // 5 minutes timeout
                 onLogout()
             }
         }
@@ -327,7 +327,7 @@ fun PopUpOverlay(
     val isRemoveStockClicked = remember { mutableStateOf(false) }
     var amount by remember { mutableStateOf("") }
 
-    if (lastInteractionTime > 90000) {
+    if (lastInteractionTime > 1000) {
         onClose()
     }
 

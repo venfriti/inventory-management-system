@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.venfriti.inventorymanagement.R
 import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
-import com.venfriti.inventorymanagement.utils.initSocketIO
+import com.venfriti.inventorymanagement.utils.initWebSocket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -46,7 +46,7 @@ fun LoginScreen(
         }
     }
     LaunchedEffect(Unit) {
-        initSocketIO { name, receivedText ->
+        initWebSocket { name, receivedText ->
             scope.launch(Dispatchers.Main) {
                 receivedMessage = receivedText
                 if (receivedMessage == "success"){

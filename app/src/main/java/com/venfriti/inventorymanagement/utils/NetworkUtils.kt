@@ -1,27 +1,25 @@
 package com.venfriti.inventorymanagement.utils
 
 import android.util.Log
-import io.socket.client.IO
-import io.socket.client.Socket
+import java.net.URI
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
 
+private lateinit var webSocketClient: WebSocketClient
 
-private lateinit var socket: Socket
-
-fun initSocketIO(onMessageReceived: (String, String) -> Unit) {
+fun initWebSocket(onMessageReceived: (String, String) -> Unit) {
     try {
-        socket = IO.socket("ws://192.168.43.24:5000")
+        val uri = URI("ws://192.168.43.23/ws")
+        webSocketClient = object : WebSocketClient(uri) {
+            override fun onOpen(handshakedata: ServerHandshake?) {
+                println("WebSocket Connected")
+            }
 
-        socket.on(Socket.EVENT_CONNECT) {
-            println("Socket.IO Connected")
-        }
-
-        socket.on("message") { args ->
-            if (args.isNotEmpty()) {
-                Log.d("ERROR", args.toString())
-                val messageString = args[0] as? String
-                if (messageString != null) {
-                    val msg = JSONObject(messageString)
+            override fun onMessage(message: String?) {
+                if (message != null) {
+                    Log.d("MESSAGE", message)
+                    val msg = JSONObject(message)
                     val sender = msg.getString("name")
                     val text = msg.getString("message")
                     onMessageReceived(sender, text)
@@ -29,13 +27,17 @@ fun initSocketIO(onMessageReceived: (String, String) -> Unit) {
                     println("No valid message received")
                 }
             }
+
+            override fun onClose(code: Int, reason: String?, remote: Boolean) {
+                println("WebSocket Disconnected: $reason")
+            }
+
+            override fun onError(ex: Exception?) {
+                ex?.printStackTrace()
+            }
         }
 
-        socket.on(Socket.EVENT_DISCONNECT) {
-            println("Socket.IO Disconnected")
-        }
-
-        socket.connect()
+        webSocketClient.connect()
     } catch (e: Exception) {
         e.printStackTrace()
     }
