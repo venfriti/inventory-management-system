@@ -52,6 +52,17 @@ class InventoryViewModel(
         _searchQuery.value = query
     }
 
+    fun addInventory(product: String, amount: Int) {
+        val inventory = Inventory(
+            name = product,
+            amount = amount
+        )
+        viewModelScope.launch {
+            inventoryRepository.addInventory(inventory)
+        }
+
+    }
+
     fun addStock(product: Inventory, stockSize: Int) {
         val newSize = product.amount + stockSize
         product.amount = newSize

@@ -54,7 +54,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -73,7 +72,6 @@ import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 import com.venfriti.inventorymanagement.ui.theme.componentBackground
 import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
-import com.venfriti.inventorymanagement.ui.theme.lightBlue
 import kotlinx.coroutines.delay
 
 
@@ -90,7 +88,7 @@ fun InventoryHomeScreen(
     onLogout: () -> Unit,
     viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    var addInventory by remember { mutableStateOf(false) }
+    var addInventoryPrompt by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         modifier = Modifier
@@ -100,7 +98,7 @@ fun InventoryHomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { addInventory = true },
+                onClick = { addInventoryPrompt = true },
                 shape = MaterialTheme.shapes.extraLarge,
                 containerColor = backgroundBlue,
                 modifier = Modifier.padding(16.dp)
@@ -113,15 +111,15 @@ fun InventoryHomeScreen(
         },
     ) { innerPadding ->
         InventoryHomeBody(name, onLogout, viewModel, innerPadding)
-        if (addInventory){
+        if (addInventoryPrompt){
             BasicAlertDialog(
                 modifier = Modifier.padding(20.dp),
-                onDismissRequest = { addInventory = false },
+                onDismissRequest = { addInventoryPrompt = false },
                 content = {
                     AddInventoryDialog(
                         viewModel,
                         lastInteractionTime = 0,
-                        onClose = { addInventory = false },
+                        onClose = { addInventoryPrompt = false },
                         resetTimer = {}
                     )
                 }
@@ -138,7 +136,10 @@ fun AddInventoryDialog(
     resetTimer: () -> Unit,
 ) {
     val context = LocalContext.current
-    if (lastInteractionTime > 90000) {
+    var amount by remember { mutableStateOf("") }
+    var productName by remember { mutableStateOf("") }
+
+    if (lastInteractionTime > 180000) {
         onClose()
     }
 
@@ -151,15 +152,88 @@ fun AddInventoryDialog(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Product",
-            fontSize = 24.sp,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = "Product:",
+                    fontSize = 24.sp,
+                    modifier = Modifier,
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            TextField(
+                value = productName,
+                onValueChange = {
+                    productName = it
+                },
+                modifier = Modifier,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                textStyle = TextStyle(
+                    fontSize = 16.sp
+                ),
+                singleLine = true,
+                maxLines = 1,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = backgroundBlue,
+                    unfocusedContainerColor = backgroundBlue,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
         Spacer(Modifier.height(24.dp))
-        ReusableBox(
-            text = "checker",
-            textSize = 24.sp
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = "Amount:",
+                    fontSize = 24.sp,
+                    modifier = Modifier,
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            TextField(
+                value = amount,
+                onValueChange = { newValue ->
+                    if (newValue.all { it.isDigit() }) {
+                        amount = newValue
+                    }
+                },
+                modifier = Modifier,
+                textStyle = TextStyle(
+                    fontSize = 16.sp
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                singleLine = true,
+                maxLines = 1,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = backgroundBlue,
+                    unfocusedContainerColor = backgroundBlue,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(modifier = Modifier.fillMaxWidth(0.5f), color = Color.Black)
         Spacer(Modifier.height(24.dp))
@@ -172,6 +246,21 @@ fun AddInventoryDialog(
             Button(
                 onClick = {
                     resetTimer()
+                    if (amount == "" || productName == "") {
+                            Toast.makeText(
+                                context,
+                                "Enter Product Name and Amount",
+                                Toast.LENGTH_LONG
+                            ).show()
+                    } else {
+                        viewModel.addInventory(productName, amount.toInt())
+                        onClose()
+                        Toast.makeText(
+                            context,
+                            "Inventory Added",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 },
                 modifier = Modifier
                     .height(50.dp)
@@ -212,7 +301,7 @@ fun InventoryHomeBody(
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000) // Check every second
-            if (currentTime - lastInteractionTime > 30000) { // 5 minutes timeout
+            if (currentTime - lastInteractionTime > 300000) { // 5 minutes timeout
                 onLogout()
             }
         }
@@ -233,7 +322,7 @@ fun InventoryHomeBody(
         val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
         var textInput by rememberSaveable { mutableStateOf("") }
 
-        var onOpenDialog: (Inventory) -> Unit = { inventory ->
+        val onOpenDialog: (Inventory) -> Unit = { inventory ->
             selectedInventory = inventory
         }
 
@@ -327,7 +416,7 @@ fun PopUpOverlay(
     val isRemoveStockClicked = remember { mutableStateOf(false) }
     var amount by remember { mutableStateOf("") }
 
-    if (lastInteractionTime > 1000) {
+    if (lastInteractionTime > 90000) {
         onClose()
     }
 
@@ -491,7 +580,7 @@ fun PopUpOverlay(
                                 }
                             }
                         }
-                        resetTimer
+                        resetTimer()
                     },
                     modifier = Modifier
                         .height(50.dp)
