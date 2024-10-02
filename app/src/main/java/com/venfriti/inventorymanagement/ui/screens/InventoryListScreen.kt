@@ -94,7 +94,10 @@ fun InventoryHomeScreen(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            InventoryTopAppBar(scrollBehavior = scrollBehavior)
+            InventoryTopAppBar(
+                scrollBehavior = scrollBehavior,
+                onLogOutClick = onLogout
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
