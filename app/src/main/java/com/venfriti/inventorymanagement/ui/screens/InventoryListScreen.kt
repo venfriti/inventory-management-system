@@ -455,9 +455,8 @@ fun PopUpOverlay(
             ) {
                 Button(
                     onClick = {
-                        isAddStockClicked.value = true
                         if (isAddStockClicked.value) {
-                            if (amount == "") {
+                            if (amount == "" && isAddStockClicked.value) {
                                 Toast.makeText(
                                     context,
                                     "Enter Stock amount",
@@ -474,6 +473,7 @@ fun PopUpOverlay(
                                 ).show()
                             }
                         }
+                        isAddStockClicked.value = true
                         resetTimer()
                     },
                     modifier = Modifier
@@ -583,6 +583,7 @@ fun PopUpOverlay(
                                 }
                             }
                         }
+                        isRemoveStockClicked.value = true
                         resetTimer()
                     },
                     modifier = Modifier
