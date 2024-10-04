@@ -44,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +73,7 @@ import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 import com.venfriti.inventorymanagement.ui.theme.componentBackground
 import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
+import com.venfriti.inventorymanagement.utils.sendEmail
 import kotlinx.coroutines.delay
 
 
@@ -257,10 +259,11 @@ fun AddInventoryDialog(
                             ).show()
                     } else {
                         viewModel.addInventory(productName, amount.toInt())
-                        onClose()
+                           onClose()
                         Toast.makeText(
                             context,
-                            "Inventory Added",
+                            if (amount == "1"){"Item added"}
+                            else {"$amount units of $productName added"},
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -340,7 +343,8 @@ fun InventoryHomeBody(
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-                    onClick = viewModel::addInventoryList,
+//                    onClick = viewModel::addInventoryList,
+                    onClick = { sendEmail("ADMIN_EMAIL", "Test Email", "This is a test email") },
                     modifier = Modifier,
                     colors = ButtonColors(
                         containerColor = componentBackground,

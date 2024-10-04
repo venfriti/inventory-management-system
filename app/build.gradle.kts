@@ -46,6 +46,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/NOTICE.md"
         }
     }
 }
@@ -63,9 +65,12 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
-    implementation("io.socket:socket.io-client:2.0.1")
-    implementation("org.json:json:20210307")
-    implementation("org.java-websocket:Java-WebSocket:1.5.2")
+    implementation(libs.socket.io.client)
+    implementation(libs.json)
+    implementation(libs.java.websocket)
+    implementation(libs.android.mail)
+    implementation(libs.android.activation)
+
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.common)

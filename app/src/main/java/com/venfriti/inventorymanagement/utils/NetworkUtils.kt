@@ -1,10 +1,22 @@
 package com.venfriti.inventorymanagement.utils
 
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URI
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
+import java.util.Properties
+import javax.mail.Authenticator
+import javax.mail.Message
+import javax.mail.PasswordAuthentication
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 private lateinit var webSocketClient: WebSocketClient
 
@@ -40,5 +52,36 @@ fun initWebSocket(onMessageReceived: (String, String) -> Unit) {
         webSocketClient.connect()
     } catch (e: Exception) {
         e.printStackTrace()
+    }
+}
+
+fun sendEmail(toEmail: String, subject: String, body: String) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val properties = Properties().apply {
+            put("mail.smtp.auth", "true")
+            put("mail.smtp.starttls.enable", "true")
+            put("mail.smtp.host", "smtp.gmail.com")
+            put("mail.smtp.port", "587")
+        }
+
+        val session = Session.getInstance(properties, object : Authenticator() {
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+                return PasswordAuthentication("ADMIN_EMAIL", "APP_EMAIL_KEY")
+            }
+        })
+
+        try {
+            val message = MimeMessage(session).apply {
+                setFrom(InternetAddress("ADMIN_EMAIL"))
+                setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
+                setSubject("Test Email")
+                setText(body)
+            }
+            withContext(Dispatchers.IO){
+                Transport.send(message)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
