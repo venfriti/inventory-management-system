@@ -74,7 +74,7 @@ fun sendEmail(toEmail: String, subject: String, body: String) {
             val message = MimeMessage(session).apply {
                 setFrom(InternetAddress("ADMIN_EMAIL"))
                 setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
-                setSubject("Test Email")
+                setSubject(subject)
                 setText(body)
             }
             withContext(Dispatchers.IO){

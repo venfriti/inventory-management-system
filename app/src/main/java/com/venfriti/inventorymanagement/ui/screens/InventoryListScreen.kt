@@ -343,8 +343,7 @@ fun InventoryHomeBody(
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-//                    onClick = viewModel::addInventoryList,
-                    onClick = { sendEmail("ADMIN_EMAIL", "Test Email", "This is a test email") },
+                    onClick = viewModel::addInventoryList,
                     modifier = Modifier,
                     colors = ButtonColors(
                         containerColor = componentBackground,
@@ -398,6 +397,7 @@ fun InventoryHomeBody(
                 onDismissRequest = { selectedInventory = null },
                 content = {
                     PopUpOverlay(
+                        name ?: "No Account",
                         inventory,
                         viewModel,
                         difference,
@@ -412,6 +412,7 @@ fun InventoryHomeBody(
 
 @Composable
 fun PopUpOverlay(
+    name: String,
     product: Inventory,
     viewModel: InventoryViewModel,
     lastInteractionTime: Long,
@@ -469,6 +470,13 @@ fun PopUpOverlay(
                             } else {
                                 viewModel.addStock(product, amount.toInt())
                                 onClose()
+                                sendEmail(
+                                    "ADMIN_EMAIL",
+                                    "Inventory Activity",
+                                    if (amount == "1"){"$name added one stock of ${product.name}"}
+                                    else {"$name added $amount stocks of ${product.name}"},
+
+                                )
                                 Toast.makeText(
                                     context,
                                     if (amount == "1"){"Item added"}
@@ -578,6 +586,12 @@ fun PopUpOverlay(
                                 else -> {
                                     viewModel.removeStock(product, amount.toInt())
                                     onClose()
+                                    sendEmail(
+                                        "ADMIN_EMAIL",
+                                        "Inventory Activity",
+                                        if (amount == "1"){"$name removed one stock of ${product.name}"}
+                                        else {"$name removed $amount stocks of ${product.name}"},
+                                    )
                                     Toast.makeText(
                                         context,
                                         if (amount == "1"){"Item removed"}
@@ -612,9 +626,9 @@ fun PopUpOverlay(
 @Composable
 fun ReusableBox(
     text: String,
-    textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     textSize: TextUnit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),

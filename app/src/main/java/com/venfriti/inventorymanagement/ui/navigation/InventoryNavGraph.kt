@@ -10,6 +10,10 @@ import com.venfriti.inventorymanagement.ui.screens.InventoryHomeScreen
 import com.venfriti.inventorymanagement.ui.screens.LoginDestination
 import com.venfriti.inventorymanagement.ui.screens.LoginScreen
 import com.venfriti.inventorymanagement.utils.RecordCheck.isAuthenticated
+import com.venfriti.inventorymanagement.utils.sendEmail
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 @Composable
@@ -26,9 +30,18 @@ fun InventoryNavHost(
             LoginScreen(
                 onLogin = { name ->
                     isAuthenticated = true
+                    val currentTimeMillis = System.currentTimeMillis()
+                    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                    val resultDate = Date(currentTimeMillis)
+                    val formattedTime = sdf.format(resultDate)
                     navController.navigate(HomeDestination.createRoute(name)) {
                         popUpTo(LoginDestination.route) { inclusive = true }
                     }
+                    sendEmail(
+                        "ADMIN_EMAIL",
+                        "Store Activity",
+                        "$name logged in at $formattedTime"
+                    )
                 }
             )
         }
