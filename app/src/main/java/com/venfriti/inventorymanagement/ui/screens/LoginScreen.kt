@@ -1,8 +1,11 @@
 package com.venfriti.inventorymanagement.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +17,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import com.venfriti.inventorymanagement.R
 import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.utils.initWebSocket
@@ -32,16 +38,21 @@ fun LoginScreen(
 ) {
     var receivedMessage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column {
-            Text(text = "Scan your card to login")
-            Button(
-                onClick = { onLogin("Test") }
-            ) {
-                Text(text = "Login Anyway")
+    ImageBackground(
+        imageRes = R.drawable.splash_screen
+    ){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(80.dp),
+            contentAlignment = Alignment.BottomCenter,
+        ) {
+            Column {
+                Button(
+                    onClick = { onLogin("Test") }
+                ) {
+                    Text(text = "Login Anyway")
+                }
             }
         }
     }
@@ -54,5 +65,21 @@ fun LoginScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ImageBackground(
+    imageRes: Int,
+    content: @Composable () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = imageRes),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        content()
     }
 }

@@ -71,8 +71,11 @@ import com.venfriti.inventorymanagement.ui.LoginDetails
 import com.venfriti.inventorymanagement.ui.SearchBar
 import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
+import com.venfriti.inventorymanagement.ui.theme.backgroundOrange
+import com.venfriti.inventorymanagement.ui.theme.backgroundProduct
 import com.venfriti.inventorymanagement.ui.theme.componentBackground
 import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
+import com.venfriti.inventorymanagement.ui.theme.textProduct
 import com.venfriti.inventorymanagement.utils.sendEmail
 import kotlinx.coroutines.delay
 
@@ -272,7 +275,7 @@ fun AddInventoryDialog(
                     .height(50.dp)
                     .weight(3f),
                 colors = ButtonColors(
-                    containerColor = componentBackground,
+                    containerColor = textProduct,
                     contentColor = Color.White,
                     disabledContentColor = Color.White,
                     disabledContainerColor = Color.Gray
@@ -346,7 +349,7 @@ fun InventoryHomeBody(
                     onClick = viewModel::addInventoryList,
                     modifier = Modifier,
                     colors = ButtonColors(
-                        containerColor = componentBackground,
+                        containerColor = textProduct,
                         contentColor = Color.White,
                         disabledContentColor = Color.White,
                         disabledContainerColor = Color.Gray
@@ -441,14 +444,14 @@ fun PopUpOverlay(
             Row {
                 ReusableBox(
                     text = "Product: ${product.name}",
-                    textSize = 24.sp,
+                    textStyle = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
         ReusableBox(
             text = stringResource(R.string.product_amount, product.amount),
-            textSize = 24.sp
+            textStyle = MaterialTheme.typography.bodySmall
         )
         Spacer(Modifier.height(24.dp))
         HorizontalDivider(modifier = Modifier.fillMaxWidth(0.6f), color = Color.Black)
@@ -496,13 +499,15 @@ fun PopUpOverlay(
                         .height(50.dp)
                         .weight(3f),
                     colors = ButtonColors(
-                        containerColor = componentBackground,
+                        containerColor = textProduct,
                         contentColor = Color.White,
                         disabledContentColor = Color.White,
                         disabledContainerColor = Color.Gray
                     )
                 ) {
-                    Text(text = "Add Stock")
+                    Text(
+                        text = "Add Stock"
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -612,8 +617,8 @@ fun PopUpOverlay(
                         .height(50.dp)
                         .weight(3f),
                     colors = ButtonColors(
-                        containerColor = componentBackground,
-                        contentColor = Color.White,
+                        containerColor = Color.White,
+                        contentColor = textProduct,
                         disabledContentColor = Color.White,
                         disabledContainerColor = Color.Gray
                     )
@@ -630,7 +635,6 @@ fun PopUpOverlay(
 @Composable
 fun ReusableBox(
     text: String,
-    textSize: TextUnit,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
 ) {
@@ -641,8 +645,7 @@ fun ReusableBox(
         Text(
             text,
             modifier = Modifier,
-            style = textStyle,
-            fontSize = textSize
+            style = textStyle
         )
     }
 }
@@ -681,7 +684,7 @@ fun Product(
     Box(
         modifier = modifier
             .clip(ShapeDefaults.Medium)
-            .background(backgroundBlue)
+            .background(backgroundProduct)
             .fillMaxWidth(0.5f)
             .fillMaxHeight(0.3f),
         contentAlignment = Alignment.Center
@@ -703,12 +706,14 @@ fun Product(
                 Column {
                     Text(
                         text = product.name,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = textProduct
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.amount, product.amount),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodySmall,
+                        color = textProduct
                     )
                 }
             }
@@ -728,7 +733,7 @@ fun Product(
                     enabled = true,
                     shape = ShapeDefaults.Medium,
                     colors = ButtonColors(
-                        containerColor = componentBackground,
+                        containerColor = backgroundOrange,
                         contentColor = Color.White,
                         disabledContentColor = Color.White,
                         disabledContainerColor = Color.Gray

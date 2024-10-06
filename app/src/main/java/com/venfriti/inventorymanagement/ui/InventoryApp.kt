@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.venfriti.inventorymanagement.ui.theme.lightBlue
+import com.venfriti.inventorymanagement.ui.theme.textProduct
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,8 +43,8 @@ fun InventoryTopAppBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = lightBlue,
-            scrolledContainerColor = lightBlue
+            containerColor = textProduct,
+            scrolledContainerColor = textProduct
         ),
         modifier = modifier
     )
