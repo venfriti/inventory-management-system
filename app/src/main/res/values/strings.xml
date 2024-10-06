@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Inventory</string>
+    <string name="app_name">Inventrid</string>
     <string name="name">Name: %1$s</string>
     <string name="amount">Stock Left: %1$s</string>
     <string name="add_or_remove_inventory">Add/Remove Inventory</string>

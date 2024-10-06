@@ -1,6 +1,7 @@
 package com.venfriti.inventorymanagement.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -56,8 +57,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -349,18 +352,23 @@ fun InventoryHomeBody(
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Button(
-                    onClick = viewModel::addInventoryList,
-                    modifier = Modifier,
-                    colors = ButtonColors(
-                        containerColor = textProduct,
-                        contentColor = Color.White,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray
-                    )
-                ) {
-                    Text(text = "populate")
-                }
+                Image(
+                    painter = painterResource(R.drawable.logo),
+                    contentDescription = "Logo",
+                    contentScale = ContentScale.Fit,
+                )
+//                Button(
+//                    onClick = viewModel::addInventoryList,
+//                    modifier = Modifier,
+//                    colors = ButtonColors(
+//                        containerColor = textProduct,
+//                        contentColor = Color.White,
+//                        disabledContentColor = Color.White,
+//                        disabledContainerColor = Color.Gray
+//                    )
+//                ) {
+//                    Text(text = "populate")
+//                }
             }
             Box(
                 modifier = Modifier.weight(5f),
