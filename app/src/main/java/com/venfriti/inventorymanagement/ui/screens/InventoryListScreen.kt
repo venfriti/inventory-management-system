@@ -29,6 +29,9 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -48,7 +51,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,7 +68,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -80,7 +81,6 @@ import com.venfriti.inventorymanagement.ui.navigation.NavigationDestination
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
 import com.venfriti.inventorymanagement.ui.theme.backgroundOrange
 import com.venfriti.inventorymanagement.ui.theme.backgroundProduct
-import com.venfriti.inventorymanagement.ui.theme.componentBackground
 import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
 import com.venfriti.inventorymanagement.ui.theme.textProduct
 import com.venfriti.inventorymanagement.utils.sendEmail
@@ -126,7 +126,7 @@ fun InventoryHomeScreen(
         },
     ) { innerPadding ->
         InventoryHomeBody(name, onLogout, viewModel, innerPadding)
-        if (addInventoryPrompt){
+        if (addInventoryPrompt) {
             BasicAlertDialog(
                 modifier = Modifier.padding(20.dp),
                 onDismissRequest = { addInventoryPrompt = false },
@@ -158,140 +158,152 @@ fun AddInventoryDialog(
         onClose()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxHeight(0.5f)
-            .background(dirtyWhite)
-            .padding(12.dp)
-            .clip(ShapeDefaults.Medium),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        shape = ShapeDefaults.Medium,
+        elevation = CardDefaults
+            .cardElevation(
+                defaultElevation = 8.dp
+            )
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(horizontal = 24.dp)
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Box(
-                contentAlignment = Alignment.Center
-            ){
-                Text(
-                    text = "Product:",
-                    fontSize = 24.sp,
-                    modifier = Modifier,
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            TextField(
-                value = productName,
-                onValueChange = {
-                    productName = it
-                },
-                modifier = Modifier,
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done
-                ),
-                textStyle = TextStyle(
-                    fontSize = 16.sp,
-                ),
-                singleLine = true,
-                maxLines = 1,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = backgroundBlue,
-                    unfocusedContainerColor = backgroundBlue,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-        }
-        Spacer(Modifier.height(24.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(horizontal = 24.dp)
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Box(
-                contentAlignment = Alignment.Center
-            ){
-                Text(
-                    text = "Amount:",
-                    fontSize = 24.sp,
-                    modifier = Modifier,
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            TextField(
-                value = amount,
-                onValueChange = { newValue ->
-                    if (newValue.all { it.isDigit() }) {
-                        amount = newValue
-                    }
-                },
-                modifier = Modifier,
-                textStyle = TextStyle(
-                    fontSize = 16.sp
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-                singleLine = true,
-                maxLines = 1,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = backgroundBlue,
-                    unfocusedContainerColor = backgroundBlue,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-        }
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider(modifier = Modifier.fillMaxWidth(0.5f), color = Color.Black)
-        Spacer(Modifier.height(24.dp))
-        Row(
+        Column(
             modifier = Modifier
-                .padding(horizontal = 36.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+                .fillMaxHeight(0.5f)
+                .background(dirtyWhite)
+                .padding(12.dp)
+                .clip(ShapeDefaults.Medium),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(
-                onClick = {
-                    resetTimer()
-                    if (amount == "" || productName == "") {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Product:",
+                        fontSize = 24.sp,
+                        modifier = Modifier,
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                TextField(
+                    value = productName,
+                    onValueChange = {
+                        productName = it
+                    },
+                    modifier = Modifier,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    textStyle = TextStyle(
+                        fontSize = 16.sp,
+                    ),
+                    singleLine = true,
+                    maxLines = 1,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = backgroundBlue,
+                        unfocusedContainerColor = backgroundBlue,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(24.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Amount:",
+                        fontSize = 24.sp,
+                        modifier = Modifier,
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                TextField(
+                    value = amount,
+                    onValueChange = { newValue ->
+                        if (newValue.all { it.isDigit() }) {
+                            amount = newValue
+                        }
+                    },
+                    modifier = Modifier,
+                    textStyle = TextStyle(
+                        fontSize = 16.sp
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    singleLine = true,
+                    maxLines = 1,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = backgroundBlue,
+                        unfocusedContainerColor = backgroundBlue,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth(0.5f), color = Color.Black)
+            Spacer(Modifier.height(24.dp))
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 36.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = {
+                        resetTimer()
+                        if (amount == "" || productName == "") {
                             Toast.makeText(
                                 context,
                                 "Enter Product Name and Amount",
                                 Toast.LENGTH_LONG
                             ).show()
-                    } else {
-                        viewModel.addInventory(productName, amount.toInt())
-                           onClose()
-                        Toast.makeText(
-                            context,
-                            if (amount == "1"){"Item added"}
-                            else {"$amount units of $productName added"},
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                },
-                modifier = Modifier
-                    .height(50.dp)
-                    .weight(3f),
-                colors = ButtonColors(
-                    containerColor = textProduct,
-                    contentColor = Color.White,
-                    disabledContentColor = Color.White,
-                    disabledContainerColor = Color.Gray
-                )
-            ) {
-                Text(text = "Add Stock")
+                        } else {
+                            viewModel.addInventory(productName, amount.toInt())
+                            onClose()
+                            Toast.makeText(
+                                context,
+                                if (amount == "1") {
+                                    "Item added"
+                                } else {
+                                    "$amount units of $productName added"
+                                },
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier
+                        .height(50.dp)
+                        .weight(3f),
+                    colors = ButtonColors(
+                        containerColor = textProduct,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White,
+                        disabledContainerColor = Color.Gray
+                    )
+                ) {
+                    Text(text = "Add Stock")
+                }
             }
         }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -443,216 +455,235 @@ fun PopUpOverlay(
         onClose()
     }
 
-    Column(
-        modifier = Modifier
-            .clip(ShapeDefaults.Medium)
-            .fillMaxHeight(0.5f)
-            .background(dirtyWhite)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        shape = ShapeDefaults.Medium,
+        elevation = CardDefaults
+            .cardElevation(
+                defaultElevation = 8.dp
+            )
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+                .clip(ShapeDefaults.Medium)
+                .fillMaxHeight(0.5f)
+                .background(dirtyWhite)
+                .padding(12.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(onClick = {
-                onClose()
-                viewModel.deleteInventory(product)
-            }) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = "Delete Stock"
-                )
-            }
-        }
-        ReusableBox(
-            text = "Product: ${product.name}",
-            textStyle = MaterialTheme.typography.bodyMedium,
-        )
-        Spacer(Modifier.height(24.dp))
-        ReusableBox(
-            text = stringResource(R.string.product_amount, product.amount),
-            textStyle = MaterialTheme.typography.bodySmall
-        )
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider(modifier = Modifier.fillMaxWidth(0.6f), color = Color.Black)
-        Spacer(Modifier.height(24.dp))
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 36.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            if (
-                !isRemoveStockClicked.value
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Button(
-                    onClick = {
-                        if (isAddStockClicked.value) {
-                            if (amount == "" && isAddStockClicked.value) {
-                                Toast.makeText(
-                                    context,
-                                    "Enter Stock amount",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            } else {
-                                viewModel.addStock(product, amount.toInt())
-                                onClose()
-                                sendEmail(
-                                    "ADMIN_EMAIL",
-                                    "Inventory Activity",
-                                    if (amount == "1"){"$name added one stock of ${product.name}"}
-                                    else {"$name added $amount stocks of ${product.name}"},
-
-                                )
-                                Toast.makeText(
-                                    context,
-                                    if (amount == "1"){"Item added"}
-                                    else {"$amount ${product.name} added"},
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                        isAddStockClicked.value = true
-                        resetTimer()
-                    },
-                    modifier = Modifier
-                        .height(50.dp)
-                        .weight(3f),
-                    colors = ButtonColors(
-                        containerColor = textProduct,
-                        contentColor = Color.White,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray
-                    )
-                ) {
-                    Text(
-                        text = "Add Stock"
+                IconButton(onClick = {
+                    onClose()
+                    viewModel.deleteInventory(product)
+                }) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Delete Stock"
                     )
                 }
-                Spacer(modifier = Modifier.weight(1f))
             }
-
-            if (isAddStockClicked.value || isRemoveStockClicked.value) {
-                TextField(
-                    value = amount,
-                    onValueChange = { newValue ->
-                        if (newValue.all { it.isDigit() }) {
-                            amount = newValue
-                        }
-                    },
-                    modifier = Modifier
-                        .height(50.dp)
-                        .weight(3f),
-                    textStyle = TextStyle(
-                        textAlign = TextAlign.Center
-                    ),
-                    placeholder = {
-                        Text(
-                            text = "Enter Stock Amount",
-                            fontSize = 16.sp
-                        )
-                    },
-                    leadingIcon = {
-                        IconButton(onClick = {
-                            if (amount != "" && amount != "0") {
-                                amount = (amount.toInt() - 1).toString()
-                            }
-                        }) {
-                            Icon(
-                                Icons.Filled.Remove,
-                                contentDescription = "Remove Stock"
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            amount = if (amount == "") {
-                                "1"
-                            } else {
-                                (amount.toInt() + 1).toString()
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = "Add Stock"
-                            )
-                        }
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    singleLine = true,
-                    maxLines = 1,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = backgroundBlue,
-                        unfocusedContainerColor = backgroundBlue,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                )
-            }
-            if (isRemoveStockClicked.value) {
-                Spacer(modifier = Modifier.weight(1f))
-            }
-            if (!isAddStockClicked.value) {
-                Button(
-                    onClick = {
-                        isRemoveStockClicked.value = true
-                        if (isRemoveStockClicked.value) {
-                            when {
-                                amount == ""  -> {
-                                    Toast.makeText(
-                                        context,
-                                        "Enter Stock Amount",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                                amount.toInt() > product.amount -> {
-                                    Toast.makeText(
-                                        context,
-                                        "Not enough stock",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                                else -> {
-                                    viewModel.removeStock(product, amount.toInt())
-                                    onClose()
-//                                    sendEmail(
-//                                        "ADMIN_EMAIL",
-//                                        "Inventory Activity",
-//                                        if (amount == "1"){"$name removed one stock of ${product.name}"}
-//                                        else {"$name removed $amount stocks of ${product.name}"},
-//                                    )
-                                    Toast.makeText(
-                                        context,
-                                        if (amount == "1"){"Item removed"}
-                                        else {"$amount ${product.name} removed"},
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            }
-                        }
-                        isRemoveStockClicked.value = true
-                        resetTimer()
-                    },
-                    modifier = Modifier
-                        .height(50.dp)
-                        .weight(3f)
-                        .border(1.dp, textProduct, shape = RoundedCornerShape(28.dp)),
-                    colors = ButtonColors(
-                        containerColor = Color.White,
-                        contentColor = textProduct,
-                        disabledContentColor = Color.White,
-                        disabledContainerColor = Color.Gray
-                    )
+            ReusableBox(
+                text = "Product: ${product.name}",
+                textStyle = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.height(24.dp))
+            ReusableBox(
+                text = stringResource(R.string.product_amount, product.amount),
+                textStyle = MaterialTheme.typography.bodySmall
+            )
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth(0.6f), color = Color.Black)
+            Spacer(Modifier.height(24.dp))
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 36.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                if (
+                    !isRemoveStockClicked.value
                 ) {
-                    Text(
-                        text = "Remove Stock"
+                    Button(
+                        onClick = {
+                            if (isAddStockClicked.value) {
+                                if (amount == "" && isAddStockClicked.value) {
+                                    Toast.makeText(
+                                        context,
+                                        "Enter Stock amount",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    viewModel.addStock(product, amount.toInt())
+                                    onClose()
+                                    sendEmail(
+                                        "ADMIN_EMAIL",
+                                        "Inventory Activity",
+                                        if (amount == "1") {
+                                            "$name added one stock of ${product.name}"
+                                        } else {
+                                            "$name added $amount stocks of ${product.name}"
+                                        },
+
+                                        )
+                                    Toast.makeText(
+                                        context,
+                                        if (amount == "1") {
+                                            "Item added"
+                                        } else {
+                                            "$amount ${product.name} added"
+                                        },
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                            isAddStockClicked.value = true
+                            resetTimer()
+                        },
+                        modifier = Modifier
+                            .height(50.dp)
+                            .weight(3f),
+                        colors = ButtonColors(
+                            containerColor = textProduct,
+                            contentColor = Color.White,
+                            disabledContentColor = Color.White,
+                            disabledContainerColor = Color.Gray
+                        )
+                    ) {
+                        Text(
+                            text = "Add Stock"
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
+                if (isAddStockClicked.value || isRemoveStockClicked.value) {
+                    TextField(
+                        value = amount,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() }) {
+                                amount = newValue
+                            }
+                        },
+                        modifier = Modifier
+                            .height(50.dp)
+                            .weight(3f),
+                        textStyle = TextStyle(
+                            textAlign = TextAlign.Center
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "Enter Stock Amount",
+                                fontSize = 16.sp
+                            )
+                        },
+                        leadingIcon = {
+                            IconButton(onClick = {
+                                if (amount != "" && amount != "0") {
+                                    amount = (amount.toInt() - 1).toString()
+                                }
+                            }) {
+                                Icon(
+                                    Icons.Filled.Remove,
+                                    contentDescription = "Remove Stock"
+                                )
+                            }
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                amount = if (amount == "") {
+                                    "1"
+                                } else {
+                                    (amount.toInt() + 1).toString()
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = "Add Stock"
+                                )
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        singleLine = true,
+                        maxLines = 1,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = backgroundBlue,
+                            unfocusedContainerColor = backgroundBlue,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
                     )
+                }
+                if (isRemoveStockClicked.value) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+                if (!isAddStockClicked.value) {
+                    Button(
+                        onClick = {
+                            isRemoveStockClicked.value = true
+                            if (isRemoveStockClicked.value) {
+                                when {
+                                    amount == "" -> {
+                                        Toast.makeText(
+                                            context,
+                                            "Enter Stock Amount",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+
+                                    amount.toInt() > product.amount -> {
+                                        Toast.makeText(
+                                            context,
+                                            "Not enough stock",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+
+                                    else -> {
+                                        viewModel.removeStock(product, amount.toInt())
+                                        onClose()
+                                    sendEmail(
+                                        "ADMIN_EMAIL",
+                                        "Inventory Activity",
+                                        if (amount == "1"){"$name removed one stock of ${product.name}"}
+                                        else {"$name removed $amount stocks of ${product.name}"},
+                                    )
+                                        Toast.makeText(
+                                            context,
+                                            if (amount == "1") {
+                                                "Item removed"
+                                            } else {
+                                                "$amount ${product.name} removed"
+                                            },
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                            isRemoveStockClicked.value = true
+                            resetTimer()
+                        },
+                        modifier = Modifier
+                            .height(50.dp)
+                            .weight(3f)
+                            .border(1.dp, textProduct, shape = RoundedCornerShape(28.dp)),
+                        colors = ButtonColors(
+                            containerColor = Color.White,
+                            contentColor = textProduct,
+                            disabledContentColor = Color.White,
+                            disabledContainerColor = Color.Gray
+                        )
+                    ) {
+                        Text(
+                            text = "Remove Stock"
+                        )
+                    }
                 }
             }
         }
