@@ -13,4 +13,6 @@ interface InventoryRepository {
     fun getSearchList(searchName: String): Flow<List<Inventory>>
 
     suspend fun updateInventory(inventory: Inventory)
+
+    suspend fun deleteInventory(id: Int)
 }

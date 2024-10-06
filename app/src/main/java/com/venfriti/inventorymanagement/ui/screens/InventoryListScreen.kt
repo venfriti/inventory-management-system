@@ -2,6 +2,7 @@ package com.venfriti.inventorymanagement.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,10 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -59,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -108,7 +112,7 @@ fun InventoryHomeScreen(
             FloatingActionButton(
                 onClick = { addInventoryPrompt = true },
                 shape = MaterialTheme.shapes.extraLarge,
-                containerColor = backgroundBlue,
+                containerColor = backgroundProduct,
                 modifier = Modifier.padding(16.dp)
             ) {
                 Icon(
@@ -186,7 +190,7 @@ fun AddInventoryDialog(
                     imeAction = ImeAction.Done
                 ),
                 textStyle = TextStyle(
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
                 ),
                 singleLine = true,
                 maxLines = 1,
@@ -440,14 +444,25 @@ fun PopUpOverlay(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(){
-            Row {
-                ReusableBox(
-                    text = "Product: ${product.name}",
-                    textStyle = MaterialTheme.typography.bodyMedium,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(onClick = {
+                onClose()
+                viewModel.deleteInventory(product)
+            }) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = "Delete Stock"
                 )
             }
         }
+        ReusableBox(
+            text = "Product: ${product.name}",
+            textStyle = MaterialTheme.typography.bodyMedium,
+        )
         Spacer(Modifier.height(24.dp))
         ReusableBox(
             text = stringResource(R.string.product_amount, product.amount),
@@ -523,6 +538,9 @@ fun PopUpOverlay(
                     modifier = Modifier
                         .height(50.dp)
                         .weight(3f),
+                    textStyle = TextStyle(
+                        textAlign = TextAlign.Center
+                    ),
                     placeholder = {
                         Text(
                             text = "Enter Stock Amount",
@@ -615,7 +633,8 @@ fun PopUpOverlay(
                     },
                     modifier = Modifier
                         .height(50.dp)
-                        .weight(3f),
+                        .weight(3f)
+                        .border(1.dp, textProduct, shape = RoundedCornerShape(28.dp)),
                     colors = ButtonColors(
                         containerColor = Color.White,
                         contentColor = textProduct,

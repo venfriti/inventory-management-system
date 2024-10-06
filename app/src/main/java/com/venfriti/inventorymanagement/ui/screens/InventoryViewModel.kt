@@ -63,6 +63,12 @@ class InventoryViewModel(
 
     }
 
+    fun deleteInventory(product: Inventory) {
+        viewModelScope.launch {
+            inventoryRepository.deleteInventory(product.id)
+        }
+    }
+
     fun addStock(product: Inventory, stockSize: Int) {
         val newSize = product.amount + stockSize
         product.amount = newSize

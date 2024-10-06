@@ -16,6 +16,7 @@ class OfflineInventoryRepository(private val inventoryDao: InventoryDao): Invent
     ) = inventoryDao.addInventoryList(inventoryList)
 
     override suspend fun updateInventory(inventory: Inventory) = inventoryDao.updateInventory(inventory)
+    override suspend fun deleteInventory(id: Int)  = inventoryDao.deleteInventory(id)
 
     override fun getSearchList(
         searchName: String

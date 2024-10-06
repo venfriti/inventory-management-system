@@ -25,4 +25,7 @@ interface InventoryDao{
     @Update
     suspend fun updateInventory(inventory: Inventory)
 
+    @Query("DELETE FROM inventory WHERE id = :id")
+    suspend fun deleteInventory(id: Int)
+
 }

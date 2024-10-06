@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.venfriti.inventorymanagement.ui.theme.backgroundBlue
+import com.venfriti.inventorymanagement.ui.theme.backgroundProduct
 
 @Composable
 fun LoginDetails(name: String, icon: ImageVector) {
@@ -75,8 +76,8 @@ fun SearchBar(
         singleLine = true,
         maxLines = 1,
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = backgroundBlue,
-            unfocusedContainerColor = backgroundBlue,
+            focusedContainerColor = backgroundProduct,
+            unfocusedContainerColor = backgroundProduct,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),

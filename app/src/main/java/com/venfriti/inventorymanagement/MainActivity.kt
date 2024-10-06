@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
                 InventoryApp()
             }
         }
-        startLockTaskMode()
+//        startLockTaskMode()
     }
 
     override fun onPause() {
