@@ -42,7 +42,7 @@ fun InventoryManagementTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = customTypography,
         shapes = Shapes,
         content = content
     )

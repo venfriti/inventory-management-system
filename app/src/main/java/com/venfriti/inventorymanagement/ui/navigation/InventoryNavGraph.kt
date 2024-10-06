@@ -37,11 +37,11 @@ fun InventoryNavHost(
                     navController.navigate(HomeDestination.createRoute(name)) {
                         popUpTo(LoginDestination.route) { inclusive = true }
                     }
-                    sendEmail(
-                        "ADMIN_EMAIL",
-                        "Store Activity",
-                        "$name logged in at $formattedTime"
-                    )
+//                    sendEmail(
+//                        "ADMIN_EMAIL",
+//                        "Store Activity",
+//                        "$name logged in at $formattedTime"
+//                    )
                 }
             )
         }

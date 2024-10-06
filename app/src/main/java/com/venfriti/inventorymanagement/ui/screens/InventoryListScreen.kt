@@ -430,17 +430,21 @@ fun PopUpOverlay(
 
     Column(
         modifier = Modifier
+            .clip(ShapeDefaults.Medium)
             .fillMaxHeight(0.5f)
             .background(dirtyWhite)
-            .padding(12.dp)
-            .clip(ShapeDefaults.Medium),
+            .padding(12.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ReusableBox(
-            text = product.name,
-            textSize = 24.sp,
-        )
+        Box(){
+            Row {
+                ReusableBox(
+                    text = "Product: ${product.name}",
+                    textSize = 24.sp,
+                )
+            }
+        }
         Spacer(Modifier.height(24.dp))
         ReusableBox(
             text = stringResource(R.string.product_amount, product.amount),
@@ -586,12 +590,12 @@ fun PopUpOverlay(
                                 else -> {
                                     viewModel.removeStock(product, amount.toInt())
                                     onClose()
-                                    sendEmail(
-                                        "ADMIN_EMAIL",
-                                        "Inventory Activity",
-                                        if (amount == "1"){"$name removed one stock of ${product.name}"}
-                                        else {"$name removed $amount stocks of ${product.name}"},
-                                    )
+//                                    sendEmail(
+//                                        "ADMIN_EMAIL",
+//                                        "Inventory Activity",
+//                                        if (amount == "1"){"$name removed one stock of ${product.name}"}
+//                                        else {"$name removed $amount stocks of ${product.name}"},
+//                                    )
                                     Toast.makeText(
                                         context,
                                         if (amount == "1"){"Item removed"}
@@ -698,13 +702,13 @@ fun Product(
             ) {
                 Column {
                     Text(
-                        text = stringResource(R.string.name, product.name),
-                        fontSize = 24.sp
+                        text = product.name,
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.amount, product.amount),
-                        fontSize = 24.sp
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
@@ -713,7 +717,7 @@ fun Product(
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(2f)
-                    .padding(top = 16.dp),
+                    .padding(top = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
@@ -731,7 +735,7 @@ fun Product(
                     )
                 ) {
                     Text(
-                        text = "Add/Remove",
+                        text = "Edit",
                         fontSize = 16.sp
                     )
                 }
