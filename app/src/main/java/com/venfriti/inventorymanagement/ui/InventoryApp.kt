@@ -29,7 +29,8 @@ fun InventoryTopAppBar(
             Text(
                 text = "Inventory Dashboard",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color.White
+                color = Color.White,
+                modifier = Modifier.padding(start = 24.dp)
             )
         },
         actions = {
@@ -38,7 +39,7 @@ fun InventoryTopAppBar(
                     text = "Log Out",
                     color = Color.White,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 12.dp, end = 8.dp)
+                    modifier = Modifier.padding(top = 12.dp, end = 24.dp)
                 )
             }
         },

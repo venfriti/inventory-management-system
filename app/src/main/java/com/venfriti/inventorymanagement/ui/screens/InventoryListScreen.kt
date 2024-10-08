@@ -169,11 +169,11 @@ fun AddInventoryDialog(
         elevation = CardDefaults
             .cardElevation(
                 defaultElevation = 8.dp
-            )
+            ),
     ) {
         Column(
             modifier = Modifier
-                .fillMaxHeight(0.5f)
+                .fillMaxHeight(0.6f)
                 .background(dirtyWhite)
                 .padding(12.dp)
                 .clip(ShapeDefaults.Medium),
@@ -230,7 +230,7 @@ fun AddInventoryDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Amount:",
+                        text = "Stock:   ",
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier,
                     )
@@ -367,7 +367,7 @@ fun InventoryHomeBody(
             Box(
                 modifier = Modifier
                     .weight(2f)
-                    .padding(16.dp),
+                    .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 32.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
