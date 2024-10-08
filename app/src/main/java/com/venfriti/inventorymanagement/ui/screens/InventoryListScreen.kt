@@ -31,7 +31,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -102,6 +101,11 @@ fun InventoryHomeScreen(
 ) {
     var addInventoryPrompt by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var nameRole = name ?: "No Account"
+    if (nameRole == "John Doe"){
+        "Admin".also { nameRole = it }
+    }
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -112,20 +116,22 @@ fun InventoryHomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { addInventoryPrompt = true },
-                shape = MaterialTheme.shapes.extraLarge,
-                containerColor = backgroundProduct,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Inventory",
-                )
+            if (nameRole == "Admin"){
+                FloatingActionButton(
+                    onClick = { addInventoryPrompt = true },
+                    shape = MaterialTheme.shapes.extraLarge,
+                    containerColor = backgroundProduct,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Inventory",
+                    )
+                }
             }
         },
     ) { innerPadding ->
-        InventoryHomeBody(name, onLogout, viewModel, innerPadding)
+        InventoryHomeBody(nameRole, onLogout, viewModel, innerPadding)
         if (addInventoryPrompt) {
             BasicAlertDialog(
                 modifier = Modifier.padding(20.dp),
@@ -185,7 +191,7 @@ fun AddInventoryDialog(
                 ) {
                     Text(
                         text = "Product:",
-                        fontSize = 24.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier,
                     )
                 }
@@ -225,7 +231,7 @@ fun AddInventoryDialog(
                 ) {
                     Text(
                         text = "Amount:",
-                        fontSize = 24.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier,
                     )
                 }
@@ -383,7 +389,8 @@ fun InventoryHomeBody(
 //                }
             }
             Box(
-                modifier = Modifier.weight(5f),
+                modifier = Modifier
+                    .weight(5f),
                 contentAlignment = Alignment.Center
             ) {
                 SearchBar(
@@ -476,14 +483,16 @@ fun PopUpOverlay(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                IconButton(onClick = {
-                    onClose()
-                    viewModel.deleteInventory(product)
-                }) {
-                    Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = "Delete Stock"
-                    )
+                if (name == "Admin"){
+                    IconButton(onClick = {
+                        onClose()
+                        viewModel.deleteInventory(product)
+                    }) {
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = "Delete Stock"
+                        )
+                    }
                 }
             }
             ReusableBox(
@@ -577,7 +586,8 @@ fun PopUpOverlay(
                         placeholder = {
                             Text(
                                 text = "Enter Stock Amount",
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center
                             )
                         },
                         leadingIcon = {

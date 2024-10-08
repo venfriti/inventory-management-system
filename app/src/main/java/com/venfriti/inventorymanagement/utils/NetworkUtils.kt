@@ -66,14 +66,14 @@ fun sendEmail(toEmail: String, subject: String, body: String) {
 
         val session = Session.getInstance(properties, object : Authenticator() {
             override fun getPasswordAuthentication(): PasswordAuthentication {
-                return PasswordAuthentication("ADMIN_EMAIL", "APP_EMAIL_KEY")
+                return PasswordAuthentication("APP_EMAIL", "APP_EMAIL_KEY")
             }
         })
 
         try {
             val message = MimeMessage(session).apply {
-                setFrom(InternetAddress("ADMIN_EMAIL"))
-                setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
+                setFrom(InternetAddress("admin.inventrid"))
+                setRecipients(Message.RecipientType.TO, InternetAddress.parse("ADMIN_EMAIL"))
                 setSubject(subject)
                 setText(body)
             }
