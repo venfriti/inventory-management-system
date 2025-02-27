@@ -102,8 +102,16 @@ fun InventoryHomeScreen(
     var addInventoryPrompt by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var nameRole = name ?: "No Account"
-    if (nameRole == "John Doe"){
-        "Admin".also { nameRole = it }
+    when (nameRole) {
+        "John Doe" -> {
+            "Admin".also { nameRole = it }
+        }
+        "Jane Smith" -> {
+            "Tolulope".also { nameRole = it }
+        }
+        "Alice Brown" -> {
+            "Godwin".also { nameRole = it }
+        }
     }
 
     Scaffold(

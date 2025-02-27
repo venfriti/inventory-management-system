@@ -70,11 +70,16 @@ dependencies {
     implementation(libs.java.websocket)
     implementation(libs.android.mail)
     implementation(libs.android.activation)
+    implementation(libs.play.services.base)
+    implementation(libs.androidx.material3.window.size.class1)
+
 
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.play.services.basement)
+    debugImplementation(libs.androidx.ui.tooling)
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)

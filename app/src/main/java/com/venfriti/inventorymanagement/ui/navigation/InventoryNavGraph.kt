@@ -1,5 +1,6 @@
 package com.venfriti.inventorymanagement.ui.navigation
 
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -18,6 +19,7 @@ import java.util.Locale
 
 @Composable
 fun InventoryNavHost(
+    windowSize: WindowWidthSizeClass,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
@@ -28,6 +30,7 @@ fun InventoryNavHost(
     ) {
         composable(route = LoginDestination.route) {
             LoginScreen(
+                windowSize,
                 onLogin = { name ->
                     isAuthenticated = true
                     val currentTimeMillis = System.currentTimeMillis()
@@ -40,7 +43,21 @@ fun InventoryNavHost(
                     sendEmail(
                         "ADMIN_EMAIL",
                         "Store Activity",
-                        "$name logged in at $formattedTime"
+                        (when (name) {
+                            "John Doe" -> {
+                                "Admin logged in at $formattedTime"
+                            }
+                            "Jane Smith" -> {
+                                "Tolulope logged in at $formattedTime"
+                            }
+                            "Alice Brown" -> {
+                                "Godwin logged in at $formattedTime"
+                            }
+
+                            else -> {
+                                "$name logged in at $formattedTime"
+                            }
+                        }).toString()
                     )
                 }
             )
