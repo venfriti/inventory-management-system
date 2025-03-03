@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -6,7 +9,11 @@ plugins {
 
 android {
     namespace = "com.venfriti.inventorymanagement"
-    compileSdk = 34
+    compileSdk = 35
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.venfriti.inventorymanagement"
@@ -14,6 +21,8 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -28,6 +37,41 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            val localProperties = Properties()
+            val localFile = rootProject.file("local.properties")
+
+            if (localFile.exists()) {
+                localProperties.load(FileInputStream(localFile))
+
+                buildConfigField(
+                    "String",
+                    "APP_EMAIL",
+                    "\"${localProperties.getProperty("APP_EMAIL")}\""
+                )
+                buildConfigField(
+                    "String",
+                    "APP_EMAIL_KEY",
+                    "\"${localProperties.getProperty("APP_EMAIL_KEY")}\""
+                )
+                buildConfigField(
+                    "String",
+                    "ADMIN_EMAIL",
+                    "\"${localProperties.getProperty("ADMIN_EMAIL")}\""
+                )
+                buildConfigField(
+                    "String",
+                    "EMAIL_HOST",
+                    "\"${localProperties.getProperty("EMAIL_HOST")}\""
+                )
+                buildConfigField(
+                    "String",
+                    "EMAIL_PORT",
+                    "\"${localProperties.getProperty("EMAIL_PORT")}\""
+                )
+
+            }
         }
     }
     compileOptions {

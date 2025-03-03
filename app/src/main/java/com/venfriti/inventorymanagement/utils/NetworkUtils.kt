@@ -1,9 +1,10 @@
 package com.venfriti.inventorymanagement.utils
 
 import android.util.Log
-import kotlinx.coroutines.CoroutineScope
+import com.venfriti.inventorymanagement.BuildConfig
+import com.venfriti.inventorymanagement.utils.Constants.CONNECTION_TIMEOUT
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.net.URI
 import org.java_websocket.client.WebSocketClient
@@ -55,33 +56,64 @@ fun initWebSocket(onMessageReceived: (String, String) -> Unit) {
     }
 }
 
-fun sendEmail(toEmail: String, subject: String, body: String) {
-    CoroutineScope(Dispatchers.IO).launch {
+suspend fun sendEmail(toEmail: String, subject: String, body: String): Boolean {
+    return try {
         val properties = Properties().apply {
             put("mail.smtp.auth", "true")
             put("mail.smtp.starttls.enable", "true")
-            put("mail.smtp.host", "smtp.gmail.com")
-            put("mail.smtp.port", "587")
+            put("mail.smtp.host", BuildConfig.EMAIL_HOST)
+            put("mail.smtp.port", BuildConfig.EMAIL_PORT)
+            put("mail.smtp.timeout", CONNECTION_TIMEOUT)
+            put("mail.smtp.connectiontimeout", CONNECTION_TIMEOUT)
+
+            put("mail.smtp.localhost", "com.venfriti.inventorymanagement")
+            put("mail.smtp.from", BuildConfig.APP_EMAIL)
+            put("mail.debug", "true")
         }
 
         val session = Session.getInstance(properties, object : Authenticator() {
             override fun getPasswordAuthentication(): PasswordAuthentication {
-                return PasswordAuthentication("APP_EMAIL", "APP_EMAIL_KEY")
+                return PasswordAuthentication(BuildConfig.APP_EMAIL, BuildConfig.APP_EMAIL_KEY)
             }
         })
 
-        try {
+        withContext(Dispatchers.IO) {
             val message = MimeMessage(session).apply {
-                setFrom(InternetAddress("admin.inventrid"))
-                setRecipients(Message.RecipientType.TO, InternetAddress.parse("ADMIN_EMAIL"))
+                setFrom(InternetAddress(BuildConfig.APP_EMAIL))
+                setRecipients(
+                    Message.RecipientType.TO,
+                    InternetAddress.parse(toEmail)
+                )
                 setSubject(subject)
                 setText(body)
             }
-            withContext(Dispatchers.IO){
-                Transport.send(message)
+            Transport.send(message)
+        }
+        true
+    } catch (e: Exception) {
+        Log.e("EmailSender", "Failed to send email", e)
+        false
+    }
+}
+
+suspend fun sendEmailWithRetry(
+    toEmail: String = BuildConfig.ADMIN_EMAIL,
+    subject: String, body: String,
+    maxAttempts: Int = 3
+): Boolean {
+    repeat(maxAttempts) { attempt ->
+        try {
+            val success = sendEmail(toEmail, subject, body)
+            if (success) return true
+
+            if (attempt < maxAttempts - 1) {
+                delay(1000L * (attempt + 1))
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("EmailSender", "Attempt ${attempt + 1} failed: ${e.message}")
+            if (attempt == maxAttempts - 1) return false
+            delay(1000L * (attempt + 1))
         }
     }
+    return false
 }

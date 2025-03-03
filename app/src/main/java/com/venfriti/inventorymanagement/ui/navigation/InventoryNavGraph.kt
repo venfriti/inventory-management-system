@@ -2,6 +2,7 @@ package com.venfriti.inventorymanagement.ui.navigation
 
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -11,7 +12,8 @@ import com.venfriti.inventorymanagement.ui.screens.InventoryHomeScreen
 import com.venfriti.inventorymanagement.ui.screens.LoginDestination
 import com.venfriti.inventorymanagement.ui.screens.LoginScreen
 import com.venfriti.inventorymanagement.utils.RecordCheck.isAuthenticated
-import com.venfriti.inventorymanagement.utils.sendEmail
+import com.venfriti.inventorymanagement.utils.sendEmailWithRetry
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,6 +25,9 @@ fun InventoryNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+
+    val scope = rememberCoroutineScope()
+
     NavHost(
         navController = navController,
         startDestination = if (isAuthenticated) HomeDestination.route else LoginDestination.route,
@@ -37,28 +42,17 @@ fun InventoryNavHost(
                     val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
                     val resultDate = Date(currentTimeMillis)
                     val formattedTime = sdf.format(resultDate)
+
+                    scope.launch {
+                        val message = "$name logged in at $formattedTime"
+                        sendEmailWithRetry(
+                            subject = "Store Activity",
+                            body = message
+                        )
+                    }
                     navController.navigate(HomeDestination.createRoute(name)) {
                         popUpTo(LoginDestination.route) { inclusive = true }
                     }
-                    sendEmail(
-                        "ADMIN_EMAIL",
-                        "Store Activity",
-                        (when (name) {
-                            "John Doe" -> {
-                                "Admin logged in at $formattedTime"
-                            }
-                            "Jane Smith" -> {
-                                "Tolulope logged in at $formattedTime"
-                            }
-                            "Alice Brown" -> {
-                                "Godwin logged in at $formattedTime"
-                            }
-
-                            else -> {
-                                "$name logged in at $formattedTime"
-                            }
-                        }).toString()
-                    )
                 }
             )
         }

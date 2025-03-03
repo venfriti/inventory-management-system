@@ -50,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,6 +68,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -83,7 +85,9 @@ import com.venfriti.inventorymanagement.ui.theme.backgroundProduct
 import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
 import com.venfriti.inventorymanagement.ui.theme.textProduct
 import com.venfriti.inventorymanagement.utils.sendEmail
+import com.venfriti.inventorymanagement.utils.sendEmailWithRetry
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 object HomeDestination : NavigationDestination {
@@ -470,6 +474,8 @@ fun PopUpOverlay(
         onClose()
     }
 
+    val scope = rememberCoroutineScope()
+
     Card(
         shape = ShapeDefaults.Medium,
         elevation = CardDefaults
@@ -534,18 +540,20 @@ fun PopUpOverlay(
                                         Toast.LENGTH_LONG
                                     ).show()
                                 } else {
+
                                     viewModel.addStock(product, amount.toInt())
                                     onClose()
-                                    sendEmail(
-                                        "ADMIN_EMAIL",
-                                        "Inventory Activity",
-                                        if (amount == "1") {
-                                            "$name added one stock of ${product.name}"
-                                        } else {
-                                            "$name added $amount stocks of ${product.name}"
-                                        },
 
+                                    scope.launch {
+                                        sendEmailWithRetry(
+                                            subject = "Inventory Activity",
+                                            body = if (amount == "1") {
+                                                "$name added one stock of ${product.name}"
+                                            } else {
+                                                "$name added $amount stocks of ${product.name}"
+                                            },
                                         )
+                                    }
                                     Toast.makeText(
                                         context,
                                         if (amount == "1") {
@@ -666,12 +674,16 @@ fun PopUpOverlay(
                                     else -> {
                                         viewModel.removeStock(product, amount.toInt())
                                         onClose()
-                                    sendEmail(
-                                        "ADMIN_EMAIL",
-                                        "Inventory Activity",
-                                        if (amount == "1"){"$name removed one stock of ${product.name}"}
-                                        else {"$name removed $amount stocks of ${product.name}"},
-                                    )
+                                        scope.launch {
+                                            sendEmailWithRetry(
+                                                subject = "Inventory Activity",
+                                                body = if (amount == "1") {
+                                                    "$name removed one stock of ${product.name}"
+                                                } else {
+                                                    "$name removed $amount stocks of ${product.name}"
+                                                },
+                                            )
+                                        }
                                         Toast.makeText(
                                             context,
                                             if (amount == "1") {
@@ -823,4 +835,22 @@ fun Product(
             }
         }
     }
+}
+
+@Preview(showSystemUi = true, device = "spec:width=1280dp,height=800dp,dpi=240")
+@Composable
+fun ExpandedInventoryHomePreview(){
+    InventoryHomeScreen(
+        name = "Tolu",
+        onLogout = {  },
+    )
+}
+
+@Preview(showSystemUi = true, device = "spec:width=411dp,height=891dp")
+@Composable
+fun CompactInventoryHomePreview(){
+    InventoryHomeScreen(
+        name = "Tolu",
+        onLogout = {  },
+    )
 }
