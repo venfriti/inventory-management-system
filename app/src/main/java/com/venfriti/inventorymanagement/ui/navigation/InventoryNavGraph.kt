@@ -65,7 +65,8 @@ fun InventoryNavHost(
                     navController.navigate(LoginDestination.route) {
                         popUpTo(HomeDestination.route) { inclusive = true }
                     }
-                }
+                },
+                windowSize = windowSize
             )
         }
     }

@@ -6,4 +6,8 @@
     <string name="product_amount">Total Stock: %1$s</string>
     <string name="name_format">Name: %1$s</string>
     <string name="account_name">tolulope</string>
+    <string name="inventory_dashboard">Inventory Dashboard</string>
+    <string name="log_out">Log Out</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="product">"Product: "</string>
 </resources>

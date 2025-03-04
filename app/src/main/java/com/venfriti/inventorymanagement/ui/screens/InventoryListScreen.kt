@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -84,7 +85,6 @@ import com.venfriti.inventorymanagement.ui.theme.backgroundOrange
 import com.venfriti.inventorymanagement.ui.theme.backgroundProduct
 import com.venfriti.inventorymanagement.ui.theme.dirtyWhite
 import com.venfriti.inventorymanagement.ui.theme.textProduct
-import com.venfriti.inventorymanagement.utils.sendEmail
 import com.venfriti.inventorymanagement.utils.sendEmailWithRetry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -101,22 +101,12 @@ object HomeDestination : NavigationDestination {
 fun InventoryHomeScreen(
     name: String?,
     onLogout: () -> Unit,
-    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    windowSize: WindowWidthSizeClass
 ) {
     var addInventoryPrompt by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var nameRole = name ?: "No Account"
-    when (nameRole) {
-        "John Doe" -> {
-            "Admin".also { nameRole = it }
-        }
-        "Jane Smith" -> {
-            "Tolulope".also { nameRole = it }
-        }
-        "Alice Brown" -> {
-            "Godwin".also { nameRole = it }
-        }
-    }
 
     Scaffold(
         modifier = Modifier
@@ -124,7 +114,8 @@ fun InventoryHomeScreen(
         topBar = {
             InventoryTopAppBar(
                 scrollBehavior = scrollBehavior,
-                onLogOutClick = onLogout
+                onLogOutClick = onLogout,
+                windowSize = windowSize
             )
         },
         floatingActionButton = {
@@ -143,7 +134,7 @@ fun InventoryHomeScreen(
             }
         },
     ) { innerPadding ->
-        InventoryHomeBody(nameRole, onLogout, viewModel, innerPadding)
+        InventoryHomeBody(nameRole, onLogout, viewModel, innerPadding, windowSize)
         if (addInventoryPrompt) {
             BasicAlertDialog(
                 modifier = Modifier.padding(20.dp),
@@ -153,7 +144,8 @@ fun InventoryHomeScreen(
                         viewModel,
                         lastInteractionTime = 0,
                         onClose = { addInventoryPrompt = false },
-                        resetTimer = {}
+                        resetTimer = {},
+                        windowSize = windowSize
                     )
                 }
             )
@@ -167,6 +159,7 @@ fun AddInventoryDialog(
     lastInteractionTime: Long,
     onClose: () -> Unit,
     resetTimer: () -> Unit,
+    windowSize: WindowWidthSizeClass,
 ) {
     val context = LocalContext.current
     var amount by remember { mutableStateOf("") }
@@ -174,6 +167,23 @@ fun AddInventoryDialog(
 
     if (lastInteractionTime > 180000) {
         onClose()
+    }
+
+    var overlayHeight = 0.5f
+    var horizontalPadding = 36.dp
+    when (windowSize){
+        WindowWidthSizeClass.Compact -> {
+            overlayHeight = 0.4f
+            horizontalPadding = 16.dp
+        }
+        WindowWidthSizeClass.Expanded -> {
+            overlayHeight = 0.5f
+            horizontalPadding = 36.dp
+        }
+        else -> {
+            overlayHeight = 0.3f
+            horizontalPadding = 36.dp
+        }
     }
 
     Card(
@@ -185,7 +195,8 @@ fun AddInventoryDialog(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxHeight(0.6f)
+                .fillMaxHeight(overlayHeight)
+                .fillMaxWidth()
                 .background(dirtyWhite)
                 .padding(12.dp)
                 .clip(ShapeDefaults.Medium),
@@ -202,7 +213,7 @@ fun AddInventoryDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Product:",
+                        text = stringResource(R.string.product),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier,
                     )
@@ -330,7 +341,8 @@ fun InventoryHomeBody(
     name: String?,
     onLogout: () -> Unit,
     viewModel: InventoryViewModel,
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
+    windowSize: WindowWidthSizeClass
 ) {
     val focusManager = LocalFocusManager.current
     var lastInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -362,7 +374,14 @@ fun InventoryHomeBody(
                 })
             }
             .padding(contentPadding)
-            .padding(horizontal = 36.dp)
+            .padding(
+                horizontal =
+                    if (windowSize == WindowWidthSizeClass.Compact) {
+                        8.dp
+                    } else {
+                        36.dp
+                    }
+            )
     ) {
         var selectedInventory by rememberSaveable { mutableStateOf<Inventory?>(null) }
         val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
@@ -376,17 +395,41 @@ fun InventoryHomeBody(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(2f)
-                    .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.logo),
-                    contentDescription = "Logo",
-                    contentScale = ContentScale.Fit,
-                )
+            when (windowSize) {
+                WindowWidthSizeClass.Compact -> {
+                    Box(
+                        modifier = Modifier
+                            .weight(5f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        SearchBar(
+                            searchQuery = textInput,
+                            onSearch = { textInput = it },
+                            onValueChange = {
+                                textInput = it
+                                viewModel.setSearchQuery(it)
+                                resetTimer()
+                            },
+                            onClear = {
+                                textInput = ""
+                                viewModel.setSearchQuery("")
+                                resetTimer()
+                            }
+                        )
+                    }
+                }
+                else -> {
+                    Box(
+                        modifier = Modifier
+                            .weight(2f)
+                            .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.logo),
+                            contentDescription = "Logo",
+                            contentScale = ContentScale.Fit,
+                        )
 //                Button(
 //                    onClick = viewModel::addInventoryList,
 //                    modifier = Modifier,
@@ -399,47 +442,51 @@ fun InventoryHomeBody(
 //                ) {
 //                    Text(text = "populate")
 //                }
-            }
-            Box(
-                modifier = Modifier
-                    .weight(5f),
-                contentAlignment = Alignment.Center
-            ) {
-                SearchBar(
-                    searchQuery = textInput,
-                    onSearch = { textInput = it },
-                    onValueChange = {
-                        textInput = it
-                        viewModel.setSearchQuery(it)
-                        resetTimer()
-                    },
-                    onClear = {
-                        textInput = ""
-                        viewModel.setSearchQuery("")
-                        resetTimer()
                     }
-                )
+                    Box(
+                        modifier = Modifier
+                            .weight(5f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        SearchBar(
+                            searchQuery = textInput,
+                            onSearch = { textInput = it },
+                            onValueChange = {
+                                textInput = it
+                                viewModel.setSearchQuery(it)
+                                resetTimer()
+                            },
+                            onClear = {
+                                textInput = ""
+                                viewModel.setSearchQuery("")
+                                resetTimer()
+                            }
+                        )
+                    }
+                    Box(
+                        modifier = Modifier.weight(3f),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        LoginDetails(
+                            name = name ?: "No Account",
+                            icon = Icons.Filled.AccountCircle
+                        )
+                    }
+                }
+                }
             }
-            Box(
-                modifier = Modifier.weight(3f),
-                contentAlignment = Alignment.Center,
-            ) {
-                LoginDetails(
-                    name = name ?: "No Account",
-                    icon = Icons.Filled.AccountCircle
-                )
-            }
-        }
+
+
 
         InventoryGridList(
-            searchResults,
+            windowSize = windowSize,
+            products = searchResults,
             onOpenDialog = onOpenDialog,
-            resetTimer = { resetTimer() }
+            resetTimer = { resetTimer() },
         )
 
         selectedInventory?.let { inventory: Inventory ->
             BasicAlertDialog(
-                modifier = Modifier.padding(20.dp),
                 onDismissRequest = { selectedInventory = null },
                 content = {
                     PopUpOverlay(
@@ -448,7 +495,8 @@ fun InventoryHomeBody(
                         viewModel,
                         difference,
                         onClose = { selectedInventory = null },
-                        resetTimer = { resetTimer() }
+                        resetTimer = { resetTimer() },
+                        windowSize = windowSize
                     )
                 }
             )
@@ -464,6 +512,7 @@ fun PopUpOverlay(
     lastInteractionTime: Long,
     onClose: () -> Unit,
     resetTimer: () -> Unit,
+    windowSize: WindowWidthSizeClass,
 ) {
     val context = LocalContext.current
     val isAddStockClicked = remember { mutableStateOf(false) }
@@ -472,6 +521,23 @@ fun PopUpOverlay(
 
     if (lastInteractionTime > 90000) {
         onClose()
+    }
+
+    var overlayHeight = 0.5f
+    var horizontalPadding = 36.dp
+    when (windowSize){
+        WindowWidthSizeClass.Compact -> {
+            overlayHeight = 0.3f
+            horizontalPadding = 16.dp
+        }
+        WindowWidthSizeClass.Expanded -> {
+            overlayHeight = 0.5f
+            horizontalPadding = 36.dp
+        }
+        else -> {
+            overlayHeight = 0.3f
+            horizontalPadding = 36.dp
+        }
     }
 
     val scope = rememberCoroutineScope()
@@ -486,9 +552,9 @@ fun PopUpOverlay(
         Column(
             modifier = Modifier
                 .clip(ShapeDefaults.Medium)
-                .fillMaxHeight(0.5f)
+                .fillMaxHeight(overlayHeight)
                 .background(dirtyWhite)
-                .padding(12.dp),
+                .padding(vertical = 12.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -523,7 +589,7 @@ fun PopUpOverlay(
             Spacer(Modifier.height(24.dp))
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 36.dp)
+                    .padding(horizontal = horizontalPadding)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
@@ -742,10 +808,61 @@ fun ReusableBox(
 fun InventoryGridList(
     products: List<Inventory>,
     onOpenDialog: (Inventory) -> Unit,
-    modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    resetTimer: () -> Unit
+    resetTimer: () -> Unit,
+    windowSize: WindowWidthSizeClass
 ) {
+    when (windowSize){
+        WindowWidthSizeClass.Compact -> {
+            CompactInventoryGridList(
+                products,
+                onOpenDialog,
+                contentPadding,
+                resetTimer
+            )
+        }
+        else -> {
+            ExpandedInventoryGridList(
+                products,
+                onOpenDialog,
+                contentPadding,
+                resetTimer
+            )
+        }
+    }
+
+}
+
+@Composable
+fun CompactInventoryGridList(
+    products: List<Inventory>,
+    onOpenDialog: (Inventory) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    resetTimer: () -> Unit,
+){
+    LazyVerticalGrid(
+        modifier = Modifier.padding(vertical = 16.dp),
+        columns = GridCells.Fixed(1),
+        contentPadding = contentPadding
+    ) {
+        items(items = products, key = { it.id }) { product ->
+            Product(
+                product,
+                onOpenDialog = { onOpenDialog(product) },
+                modifier = Modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 16.dp),
+                resetTimer = resetTimer
+            )
+        }
+    }
+}
+
+@Composable
+fun ExpandedInventoryGridList(
+    products: List<Inventory>,
+    onOpenDialog: (Inventory) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    resetTimer: () -> Unit,
+){
     LazyVerticalGrid(
         modifier = Modifier.padding(vertical = 16.dp),
         columns = GridCells.Fixed(2),
@@ -837,20 +954,44 @@ fun Product(
     }
 }
 
-@Preview(showSystemUi = true, device = "spec:width=1280dp,height=800dp,dpi=240")
+@Preview(showSystemUi = true,
+    device = "spec:width=1280dp,height=800dp,dpi=240"
+)
 @Composable
 fun ExpandedInventoryHomePreview(){
-    InventoryHomeScreen(
-        name = "Tolu",
-        onLogout = {  },
+    InventoryGridList(
+        products = listOf(
+            Inventory(1, "bolts", 5),
+            Inventory(2, "nails", 10),
+            Inventory(3, "tables", 5),
+            Inventory(4, "chairs", 10),
+            Inventory(5, "panes", 5),
+            Inventory(6, "bowls", 10),
+            Inventory(7, "fans", 5),
+            Inventory(8, "boxes", 10),
+        ),
+        onOpenDialog = {},
+        resetTimer = {},
+        windowSize = WindowWidthSizeClass.Expanded
     )
 }
 
 @Preview(showSystemUi = true, device = "spec:width=411dp,height=891dp")
 @Composable
 fun CompactInventoryHomePreview(){
-    InventoryHomeScreen(
-        name = "Tolu",
-        onLogout = {  },
+    InventoryGridList(
+        products = listOf(
+            Inventory(1, "bolts", 5),
+            Inventory(2, "nails", 10),
+            Inventory(3, "tables", 5),
+            Inventory(4, "chairs", 10),
+            Inventory(5, "panes", 5),
+            Inventory(6, "bowls", 10),
+            Inventory(7, "fans", 5),
+            Inventory(8, "boxes", 10),
+        ),
+        onOpenDialog = {},
+        resetTimer = {},
+        windowSize = WindowWidthSizeClass.Compact
     )
 }

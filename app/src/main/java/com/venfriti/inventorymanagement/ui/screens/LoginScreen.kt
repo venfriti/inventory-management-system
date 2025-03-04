@@ -82,7 +82,7 @@ fun CompactBackground(
         ) {
             Column {
                 Button(
-                    onClick = { onLogin("Test") },
+                    onClick = { onLogin("Admin") },
                     colors = ButtonColors(
                         containerColor = Color.White,
                         contentColor = Color.Black,
@@ -115,7 +115,7 @@ fun ExpandedBackground(
         ) {
             Column {
                 Button(
-                    onClick = { onLogin("Test") },
+                    onClick = { onLogin("Admin") },
                     colors = ButtonColors(
                         containerColor = Color.White,
                         contentColor = Color.Black,
